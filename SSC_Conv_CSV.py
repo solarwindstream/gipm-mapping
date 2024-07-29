@@ -1,5 +1,8 @@
 ##Cluster SSC web conversion function (handles 1 sc at once). checks file name for spacecraft to process correctly
 ##saves result as CSV & returns the dataframe for further use
+import cdflib
+import pandas as pd
+
 
 def SSCWEBConv(cdf_file, CSV_path):
     
