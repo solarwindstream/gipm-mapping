@@ -4,7 +4,7 @@ from new_xyz import new_xyz
 import datetime as dt
 import pandas as pd
 
-def gipm_loc_tranform(only_full_windows, df_a, GIPM_matrices, FAC_coeffs):
+def gipm_loc_transform(only_full_windows, df_a, GIPM_matrices, FAC_coeffs):
     
     time_window = dt.timedelta(seconds=120)
     Cluster_GIPM_orbits = []
