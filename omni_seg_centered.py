@@ -1,4 +1,4 @@
-#avergaging time window of ten minutes, centered around midpoint of Cluster interval (bearing in mind ref time is window start)
+#averaging time window of ten minutes, centered around midpoint of Cluster interval (bearing in mind ref time is window start)
 #this function takes 1 min OMNI readings and a list of time intervals and produces df of omni average B, V and n values
 #including components
 #for 10 minute window centered on midpoint of time interval
