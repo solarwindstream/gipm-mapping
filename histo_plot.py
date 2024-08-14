@@ -1,5 +1,12 @@
+import numpy as np
+from merka05_surface_eq_array_GIPM import merka05_surface_eq_array_GIPM
+from matplotlib import pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib.colors import BoundaryNorm, ListedColormap
+from matplotlib import cm
+import matplotlib
 
-def histo_plot(XYHist, XZHist, title):
+def histo_plot(XYHist, XZHist, XMA_all, x_edge, y_edge, z_edge, title):
     x = np.linspace(0, 20, 100) #x coordinates (Re)
     y = np.linspace(-30, 30, 100) #y coordinates (Re)
     z = 0 #z coordinates in Re
@@ -22,6 +29,10 @@ def histo_plot(XYHist, XZHist, title):
     Yn_1 = Ygipm_1
     Zn_1 = Zgipm_1
     f_1 = fitting_coeffs[0]*Xn_1**2 + fitting_coeffs[1]*Yn_1**2 + fitting_coeffs[2]*Zn_1**2+ 2*fitting_coeffs[3]*Xn_1*Yn_1 + 2*fitting_coeffs[4]*Yn_1*Zn_1 + 2*fitting_coeffs[5]*Xn_1*Zn_1 + 2*fitting_coeffs[6]*Xn_1+2*fitting_coeffs[7]*Yn_1 + 2*fitting_coeffs[8]*Zn_1 + fitting_coeffs[9]
+    
+    tan_angle_0 = np.tan(np.deg2rad(15))
+    tan_angle_1 = np.tan(np.deg2rad(45))
+    tan_angle_2 = np.tan(np.deg2rad(75))
 
     #magnetopause model, D = 2 nPa
 
@@ -86,7 +97,7 @@ def histo_plot(XYHist, XZHist, title):
     #ax.plot([x_s, x_e], [y_s, y_e], color='k',linewidth=1)
     cmap = matplotlib.colormaps.get_cmap('Blues') 
     cmap.set_bad(color='lightgrey')
-    im = ax0.imshow(XYHist, interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], yedg[0], yedg[-1]], vmax=10_000, cmap = cmap)
+    im = ax0.imshow(XYHist, interpolation='nearest', origin='lower', extent=[x_edge[0], x_edge[-1], y_edge[0], y_edge[-1]], vmax=10_000, cmap = cmap)
     #ax.set_ylim(-30,30)
     #ax.set_xlim(0,30)
     ax0.invert_xaxis()
@@ -105,7 +116,7 @@ def histo_plot(XYHist, XZHist, title):
 
     ax1.hlines(y=0, xmin= 0, xmax=30, linewidth=1, color='k')
     #ax.plot([x_s, x_e], [y_s, y_e], color='k',linewidth=1)
-    ax1.imshow(XZHist, interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], yedg[0], yedg[-1]], vmax=10_000, cmap = cmap)
+    ax1.imshow(XZHist, interpolation='nearest', origin='lower', extent=[x_edge[0], x_edge[-1], z_edge[0], z_edge[-1]], vmax=10_000, cmap = cmap)
     #ax.set_ylim(-30,30)
     #ax.set_xlim(0,30)
     ax1.invert_xaxis()
