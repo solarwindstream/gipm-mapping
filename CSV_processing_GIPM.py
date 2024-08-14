@@ -51,7 +51,7 @@ omni_csv_list = []
 
 for element in list_all:
     if '.csv' in element:
-        omni_csv_list .append(element)
+        omni_csv_list.append(element)
 
 omni_df_list = []
 
