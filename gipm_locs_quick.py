@@ -45,7 +45,7 @@ def gipm_locs_quick(df_cluster, GIPM_matrices, FAC_coeffs):
         #append result
         Cluster_GIPM_orbits.append(Cluster_GIPM)
         
-    Cluster_dt_loc = pd.DataFrame({'datetime':i, 'GIPM Loc': Cluster_GIPM_orbits})
+    Cluster_dt_loc = pd.DataFrame({'datetime':df_cluster_ind, 'GIPM Loc': Cluster_GIPM_orbits})
         
 
     return(Cluster_dt_loc)  
