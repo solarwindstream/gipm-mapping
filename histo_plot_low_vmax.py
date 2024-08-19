@@ -6,7 +6,30 @@ from matplotlib.colors import BoundaryNorm, ListedColormap
 from matplotlib import cm
 import matplotlib
 
-def histo_plot(XYHist, XZHist, XMA_all, x_edge, y_edge, z_edge, title):
+#function takes cluster DF, makes histogram and plots
+
+def histo_plot(cluster_df, bin_size, XMA_all, angle):
+    
+    x_locs = cluster_df['Cluster Loc GIPM X'].to_numpy()
+    y_locs = cluster_df['Cluster Loc GIPM Y'].to_numpy()
+    z_locs = cluster_df['Cluster Loc GIPM Z'].to_numpy()
+
+    ##use numpy histogram to get actual bin numbers (1RE bins)
+    
+    x_bin_edges = np.arange(0.0, 30.0, bin_size)
+    y_bin_edges = np.arange(-30.0, 30.0, bin_size)
+    HistXY_lowZ, xedg, yedg = np.histogram2d(x_locs, y_locs, bins=[x_bin_edges, y_bin_edges])
+    HistXY_lowZ = HistXY_lowZ.T
+
+    z_bin_edges = np.arange(-30.0,30.0, bin_size)
+    HistXZ_lowZ, xedg, zedg = np.histogram2d(x_locs, z_locs, bins=[x_bin_edges, z_bin_edges])
+    HistXZ_lowZ = HistXZ_lowZ.T
+
+    HistXY_lowZ[HistXY_lowZ == 0] = np.nan
+    HistXZ_lowZ[HistXZ_lowZ == 0] = np.nan
+
+    #histo plot function
+
     x = np.linspace(0, 20, 100) #x coordinates (Re)
     y = np.linspace(-30, 30, 100) #y coordinates (Re)
     z = 0 #z coordinates in Re
@@ -30,9 +53,7 @@ def histo_plot(XYHist, XZHist, XMA_all, x_edge, y_edge, z_edge, title):
     Zn_1 = Zgipm_1
     f_1 = fitting_coeffs[0]*Xn_1**2 + fitting_coeffs[1]*Yn_1**2 + fitting_coeffs[2]*Zn_1**2+ 2*fitting_coeffs[3]*Xn_1*Yn_1 + 2*fitting_coeffs[4]*Yn_1*Zn_1 + 2*fitting_coeffs[5]*Xn_1*Zn_1 + 2*fitting_coeffs[6]*Xn_1+2*fitting_coeffs[7]*Yn_1 + 2*fitting_coeffs[8]*Zn_1 + fitting_coeffs[9]
     
-    tan_angle_0 = np.tan(np.deg2rad(15))
-    tan_angle_1 = np.tan(np.deg2rad(45))
-    tan_angle_2 = np.tan(np.deg2rad(75))
+    tan_angle = np.tan(np.deg2rad(angle))
 
     #magnetopause model, D = 2 nPa
 
@@ -63,8 +84,16 @@ def histo_plot(XYHist, XZHist, XMA_all, x_edge, y_edge, z_edge, title):
 
     X_shue = r*(np.cos(theta))
     R_shue = r*(np.sin(theta))
+    
+    if angle < 30:
+        title_a = 'Radial'
+    elif angle > 60:
+        title_a = 'Perpendicular'
+    else:
+        title_a = 'Spiral'
 
-
+    title = '1 Yr Multi Sc Cluster Coverage (Temp),' + title_a + ' IMF ' + str(bin_size) + ' RE bins, Low Z'
+    
     ###################
     fig, ax = plt.subplots()
     subfigs = fig.subfigures(1, 1)
@@ -89,7 +118,14 @@ def histo_plot(XYHist, XZHist, XMA_all, x_edge, y_edge, z_edge, title):
     x_s = X_BS_nose
     y_s = 0
     x_e = 30
-    y_e = x_e*(-tan_angle_0)
+    
+    #make sure lines do not exceed bounds of plot 
+    
+    if x_e*(-tan_angle) > -30: 
+        y_e = x_e*(-tan_angle)
+    else:
+        y_e = -30
+        x_e = y_e/(-tan_angle)
 
     #want to also have line for just solar wind flow along y=0
 
@@ -97,7 +133,8 @@ def histo_plot(XYHist, XZHist, XMA_all, x_edge, y_edge, z_edge, title):
     #ax.plot([x_s, x_e], [y_s, y_e], color='k',linewidth=1)
     cmap = matplotlib.colormaps.get_cmap('Blues') 
     cmap.set_bad(color='lightgrey')
-    im = ax0.imshow(XYHist, interpolation='nearest', origin='lower', extent=[x_edge[0], x_edge[-1], y_edge[0], y_edge[-1]], vmax=500, cmap = cmap)
+    im = ax0.imshow(HistXY_lowZ, interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], yedg[0], yedg[-1]], vmax=500, cmap = cmap)
+    ax0.plot([x_s, x_e], [y_s, y_e], color='k',linewidth=1)
     #ax.set_ylim(-30,30)
     #ax.set_xlim(0,30)
     ax0.invert_xaxis()
@@ -115,8 +152,7 @@ def histo_plot(XYHist, XZHist, XMA_all, x_edge, y_edge, z_edge, title):
 
 
     ax1.hlines(y=0, xmin= 0, xmax=30, linewidth=1, color='k')
-    #ax.plot([x_s, x_e], [y_s, y_e], color='k',linewidth=1)
-    ax1.imshow(XZHist, interpolation='nearest', origin='lower', extent=[x_edge[0], x_edge[-1], z_edge[0], z_edge[-1]], vmax=500, cmap = cmap)
+    ax1.imshow(HistXZ_lowZ, interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], zedg[0], zedg[-1]], vmax=500, cmap = cmap)
     #ax.set_ylim(-30,30)
     #ax.set_xlim(0,30)
     ax1.invert_xaxis()
