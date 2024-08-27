@@ -92,7 +92,7 @@ def histo_plot(cluster_df, bin_size, XMA_all, angle):
     else:
         title_a = 'Spiral'
 
-    title = '1 Yr Multi Sc Cluster Coverage (Temp),' + title_a + ' IMF ' + str(bin_size) + ' RE bins, Low Z'
+    title = '1 Yr Multi Sc Cluster Coverage (Temp), ' + title_a + ' IMF ' + str(bin_size) + ' RE bins, Low Z'
     
     ###################
     fig, ax = plt.subplots()
@@ -117,15 +117,9 @@ def histo_plot(cluster_df, bin_size, XMA_all, angle):
 
     x_s = X_BS_nose
     y_s = 0
-    x_e = 30
-    
-    #make sure lines do not exceed bounds of plot 
-    
-    if x_e*(-tan_angle) > -30: 
-        y_e = x_e*(-tan_angle)
-    else:
-        y_e = -30
-        x_e = y_e/(-tan_angle)
+    x_e = 29
+     
+    y_e = -x_e*(tan_angle)
 
     #want to also have line for just solar wind flow along y=0
 
@@ -133,9 +127,9 @@ def histo_plot(cluster_df, bin_size, XMA_all, angle):
     #ax.plot([x_s, x_e], [y_s, y_e], color='k',linewidth=1)
     cmap = matplotlib.colormaps.get_cmap('Blues') 
     cmap.set_bad(color='lightgrey')
-    im = ax0.imshow(HistXY_lowZ, interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], yedg[0], yedg[-1]], vmax=500, cmap = cmap)
+    im = ax0.imshow(np.flipud(HistXY_lowZ), interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], yedg[0], yedg[-1]], vmax=200, cmap = cmap)
     ax0.plot([x_s, x_e], [y_s, y_e], color='k',linewidth=1)
-    #ax.set_ylim(-30,30)
+    ax0.set_ylim(-30,30)
     #ax.set_xlim(0,30)
     ax0.invert_xaxis()
     ax0.invert_yaxis()
@@ -152,8 +146,8 @@ def histo_plot(cluster_df, bin_size, XMA_all, angle):
 
 
     ax1.hlines(y=0, xmin= 0, xmax=30, linewidth=1, color='k')
-    ax1.imshow(HistXZ_lowZ, interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], zedg[0], zedg[-1]], vmax=500, cmap = cmap)
-    #ax.set_ylim(-30,30)
+    ax1.imshow(np.flipud(HistXZ_lowZ), interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], zedg[0], zedg[-1]], vmax=200, cmap = cmap)
+    ax1.set_ylim(-30,30)
     #ax.set_xlim(0,30)
     ax1.invert_xaxis()
     ax1.invert_yaxis()

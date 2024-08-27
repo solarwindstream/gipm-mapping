@@ -14,7 +14,11 @@ from cone_angle_dfs import cone_angle_dfs
 #run a test of the GIPM conversion for six weeks of CSVs
 
 #open cluster CSVs
-path = r'/data/scratch/apx059/48_Wks_CSVs/Dec-Feb/**'
+path = r'/data/scratch/apx059/Feb-March-2001/**'
+#path = r'/data/scratch/apx059/48_Wks_CSVs/Dec-Feb/**'
+#path = r'/data/scratch/apx059/48_Wks_CSVs/March-April/**'
+#path = r'/data/scratch/apx059/48_Wks_CSVs/May-June/**'
+#path = r'/data/scratch/apx059/48_Wks_CSVs/July-November/**'
 
 list_all = []
 for path1 in glob.glob(path, recursive=True):
@@ -27,8 +31,6 @@ cluster_csv_list = []
 for element in list_all:
     if '.csv' in element:
         cluster_csv_list.append(element)
-
-#cluster_csv_list = [r'/Users/apx059/Documents/1_Yr_Data/Cluster_CSVs_2001-02-01-2001-03-15/C1_2001-02-01 00:00:00.014000.csv', r'/Users/apx059/Documents/1_Yr_Data/Cluster_CSVs_2001-02-01-2001-03-15/C1_2001-02-02 09:40:00.016000.csv',r'/Users/apx059/Documents/1_Yr_Data/Cluster_CSVs_2001-02-01-2001-03-15/C1_2001-02-03 09:40:00.005000.csv']
 
 cluster_dfs = []
 
@@ -132,9 +134,9 @@ for df in om_ave_dfs_list:
     fw_list.append(firstwin)
     
 #now Cluster
+fw_list = []
 
 for df in rad_df_list:
-    fw_list = []
     if df.size > 0:
         firstwin = df.loc[0, 'window start']
         firstwin = str(firstwin)
@@ -148,9 +150,9 @@ for df in rad_df_list:
             df.to_csv(fpath) 
     fw_list.append(firstwin)
 
+fw_list = []
     
 for df in spir_df_list:
-    fw_list = []
     if df.size > 0:
         firstwin = df.loc[0, 'window start']
         firstwin = str(firstwin)
@@ -163,9 +165,10 @@ for df in spir_df_list:
             fpath = '/data/scratch/apx059/48_Wks_Res/cluster_spir' + firstwin + counter + '.csv'
             df.to_csv(fpath) 
     fw_list.append(firstwin)
-    
+
+fw_list = []
+
 for df in perp_df_list:
-    fw_list = []
     if df.size > 0:
         firstwin = df.loc[0, 'window start']
         firstwin = str(firstwin)

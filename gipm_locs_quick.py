@@ -8,6 +8,7 @@ from new_xyz import new_xyz
 def gipm_locs_quick(df_cluster, GIPM_matrices, FAC_coeffs):
     
     Cluster_GIPM_orbits = []
+    Cluster_dts = []
     df_cluster_ind = df_cluster.index
     #mask to just the two minute window in cluster data and find mean location
     
@@ -44,8 +45,9 @@ def gipm_locs_quick(df_cluster, GIPM_matrices, FAC_coeffs):
                 
         #append result
         Cluster_GIPM_orbits.append(Cluster_GIPM)
+        Cluster_dts.append(i)
         
-    Cluster_dt_loc = pd.DataFrame({'datetime':df_cluster_ind, 'GIPM Loc': Cluster_GIPM_orbits})
+    Cluster_dt_loc = pd.DataFrame({'datetime': Cluster_dts, 'GIPM Loc': Cluster_GIPM_orbits})
         
 
     return(Cluster_dt_loc)  
