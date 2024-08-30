@@ -1,8 +1,6 @@
 #for use on cluster
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
-import matplotlib.gridspec as gridspec
 import datetime as dt
 from omni_seg import omni_seg
 from gipm_transform_coeffs import gipm_transform_coeffs
@@ -123,7 +121,7 @@ for om_df in om_ave_list:
     
 Cluster_GIPM_locs_list = []
 
-for i,j,k in zip(cl_dfs, GIPM_mat_list, FAC_coeff_list):
+for i,j,k in zip(dayside_cl_list, GIPM_mat_list, FAC_coeff_list):
     Cluster_dt_loc = gipm_locs_quick(i, j, k)
     Cluster_GIPM_locs_list.append(Cluster_dt_loc)
     
