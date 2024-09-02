@@ -2,8 +2,6 @@
 
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
-import matplotlib.gridspec as gridspec
 import datetime as dt
 from omni_seg import omni_seg
 from gipm_transform_coeffs import gipm_transform_coeffs
