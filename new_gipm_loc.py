@@ -87,12 +87,12 @@ for df in cl_ds_dfs:
     first_read = fd.strftime("%Y")
     ind_no = omni_years.index(first_read)
     ind_no_list.append(ind_no)
-    
+
 Cluster_GIPM_locs_list = []
 
+#produce FAC and MAT in this function
 for i,j in zip(cl_ds_dfs, ind_no_list):
-    mat_inst = GIPM_mat_list[j]
-    FAC_inst = FAC_coeff_list[j]
+    mat_inst, FAC_inst = gipm_transform_coeffs(om_ave_dfs[j])
     Cluster_dt_loc = gipm_locs_quick(i, mat_inst, FAC_inst)
     Cluster_GIPM_locs_list.append(Cluster_dt_loc)
     print('done!')
@@ -117,6 +117,6 @@ for df in Cluster_GIPM_locs_list:
     start_year_int = int(start_year)
     end_year_int = start_year_int + 1
     end_year = str(end_year_int)
-    filename = CSV_path + '_Feb' + start_year + '_Feb' + end_year + 'df_' + ref + '.csv'
+    filename = CSV_path + 'Feb' + start_year + '_Feb' + end_year + 'df_' + ref + '.csv'
     np.savetxt(filename,array_both, fmt='%s,%f,%f,%f')
     startref = startref + 1

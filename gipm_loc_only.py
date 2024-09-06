@@ -145,6 +145,6 @@ for df in Cluster_GIPM_locs_list:
     start_year_int = int(start_year)
     end_year_int = start_year_int + 1
     end_year = str(end_year_int)
-    filename = CSV_path + '_Feb' + start_year + '_Feb' + end_year + 'df_' + ref + '.csv'
+    filename = CSV_path + 'Feb' + start_year + '_Feb' + end_year + 'df_' + ref + '.csv'
     np.savetxt(filename,array_both, fmt='%s,%f,%f,%f')
     startref = startref + 1
