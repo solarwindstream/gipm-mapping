@@ -25,21 +25,6 @@ for element in list_all:
     if '.csv' in element:
         om_csvs.append(element)
         
-om_dfs = []
-
-for element in om_csvs:
-    om = pd.read_csv(element)
-    om_dfs.append(om)
-    
-omni_all = pd.concat(om_dfs)
-omni_all['datetime'] = pd.to_datetime(omni_all['datetime'])
-
-omni_all = omni_all.set_index('datetime')
-
-for element in om_dfs:
-    element['datetime'] = pd.to_datetime(element['datetime'])
-    element = element.set_index('datetime', inplace = True)
-
 #load Cluster CSVs
 
 list_all = []
@@ -63,19 +48,33 @@ for file in cl_file_list[0:5]:
     df['datetime'] = pd.to_datetime(df['datetime'])
     df.set_index('datetime', inplace = True)
     cl_dfs.append(df)
+    
+#load ONLY omni dfs with same year as relevant cluster dfs
 
+om_dfs = []
+
+for df in cl_dfs:
+    #find first entry year and match with corresponding omni csv. this should return only one result.
+    start_year = df.index[0].strftime("%Y")
+    res = [i for i in om_csvs if start_year in i]
+    om = pd.read_csv(res[0])
+    om_dfs.append(om)
+    
+for element in om_dfs:
+    element['datetime'] = pd.to_datetime(element['datetime'])
+    element = element.set_index('datetime', inplace = True)
 
 #iterate over all cl_dfs 
 
-for df in cl_dfs:
+for df, om_df in zip(cl_dfs, om_dfs):
     
     ma_list = []
     cone_a_list = []
     
     for i in df.index:
-        if i in omni_all.index:
-            ma_temp = omni_all['M_A'].loc[i]
-            cone_a_temp = omni_all['cone angle'].loc[i]
+        if i in om_df.index:
+            ma_temp = om_df['M_A'].loc[i]
+            cone_a_temp = om_df['cone angle'].loc[i]
             ma_list.append(ma_temp)
             cone_a_list.append(cone_a_temp)
         else:
