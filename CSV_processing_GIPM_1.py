@@ -41,7 +41,7 @@ for file in cluster_csv_list:
     cluster_dfs.append(df)
 
 #append OMNI dfs to each other
-path = r'/data/scratch/apx059/OMNI_Raw_CSVs/**'
+path = r'/data/scratch/apx059/OMNI_Raw/**'
 
 list_all = []
 for path1 in glob.glob(path, recursive=True):
