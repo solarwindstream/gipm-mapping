@@ -17,17 +17,11 @@ from GIPM_loc_conv import gipm_loc_transform
 from new_xyz import new_xyz
 from cone_angle_dfs import cone_angle_dfs
 from math import pi
-from gipm_locs_quick import gipm_locs_quick
 
-year_n = '2002'
 cdf_list_path = '/data/scratch/apx059/23_Years_Data/CDFs/CDFs_'
-list_of_cdfs = cdf_list_path + year_n + '.csv'
 
 def cdfconv_gipm(path, year):
     
-    #batch start and end
-    batch_start = batch*100
-    batch_end = (batch+1)*100
     #now make those cdfs into CSVs!
     list_files = pd.read_csv(path, header=None)
     #list_files_T = list_files.T
@@ -48,46 +42,27 @@ def cdfconv_gipm(path, year):
         if 'C1' in i:
             fpath = year_path + i
             df_c1 = C1_cdf_conv(fpath)
-            df_list_c1.append(df_c1)
+            a = df_c1.empty
+            if not a:
+                df_list_c1.append(df_c1)
         if 'C2' in i:
             fpath = year_path + i
             df_c2 = C2_cdf_conv(fpath)
-            df_list_c2.append(df_c2)
+            a = df_c2.empty
+            if not a:
+                df_list_c2.append(df_c2)
         if 'C3' in i:   
             fpath = year_path + i
             df_c3 = C3_cdf_conv(fpath)
-            df_list_c3.append(df_c3)   
+            a = df_c3.empty
+            if not a:
+                df_list_c3.append(df_c3) 
         if 'C4' in i:   
             fpath = year_path + i
             df_c4 = C4_cdf_conv(fpath)
-            df_list_c4.append(df_c4)
-            
-    #first append dataframes that *aren't* empty to new list (to avoid errors)
-    df_full_c1 = []
-    df_full_c2 = []
-    df_full_c3 = []
-    df_full_c4 = []
-
-    for df in df_list_c1:
-        a = df.empty
-        if not a:
-            df_full_c1.append(df)
-
-    for df in df_list_c2:
-        a = df.empty
-        if not a:
-            df_full_c2.append(df)
-
-    for df in df_list_c3:
-        a = df.empty
-        if not a:
-            df_full_c3.append(df)
-
-    for df in df_list_c4:
-        a = df.empty
-        if not a:
-            df_full_c4.append(df) 
-
+            a = df_c4.empty
+            if not a:
+                df_list_c4.append(df_c4)
 
     #list all OMNI files, but only import relevant ones
     #load ONLY this year's omni df
@@ -97,7 +72,11 @@ def cdfconv_gipm(path, year):
     omni_files = omni_files.rename(columns={0:'fnames'})
     list_omni_csvs = omni_files['fnames'].to_list()
     res = [i for i in list_omni_csvs if year_n in i]
-    om = pd.read_csv(res[0])
+    omni_path_1 = '/data/scratch/apx059/OMNI_Raw/' + res[0]
+    omni_path_2 = '/data/scratch/apx059/OMNI_Raw/' + res[1]
+    om_1 = pd.read_csv(omni_path_1)
+    om_2 = pd.read_csv(omni_path_2)
+    om = pd.concat([om1, om2])
 
     om['datetime'] = pd.to_datetime(om['datetime'])
     om = om.set_index('datetime')
@@ -106,71 +85,209 @@ def cdfconv_gipm(path, year):
     #GIPM conversion!
     ####PRESERVE SC LISTINGS
     ####SC1
+
+    #determine full windows lists
+    f_winds_all_1 = []
+
+    for df in df_list_c1:
+        f_winds = window_det(df)
+        f_winds_all_1.append(f_winds)
     
     om_ave_list_1 = []
-
-    for df in df_full_c1:
-        datetime_list = df.index
-        om_averages = omni_seg(om, datetime_list)
+    
+    for fw in f_winds_all_1:
+        om_averages = omni_seg(om, fw)
+        om_averages['datetime']=pd.to_datetime(om_averages['datetime'])
+        om_averages = om_averages.set_index('datetime')
         om_ave_list_1.append(om_averages)
 
-    for om_ave_df in om_ave_list_1:
-        CSV_path = '/data/scratch/apx059/Omni_Aves_SSC'
-        start_ind = om_ave_df.index[0]
-        start_year = start_ind.strftime("%Y")
-        start_year_int = int(start_year)
-        end_year_int = start_year_int + 1
-        end_year = str(end_year_int)
-        CSV_file_name = CSV_path + 'OMNI' + '_Feb' + start_year + '_1yr' + '.csv'
-        om_ave_df.to_csv(CSV_file_name)
-
-    df_no = 0
-    for cl_day in dayside_cl_list:
-        CSV_path = '/data/scratch/apx059/Cluster_Dayside_SSC'
-        df_ref = str(df_no)
-        CSV_file_name = CSV_path + 'Cluster Dayside' + '_dfref' + df_ref +'.csv'
-        cl_day.to_csv(CSV_file_name)
-        df_no = df_no + 1
-
     #find GIPM rotation matrices and scaling coefficient for every Cluster location
-    GIPM_mat_list = []
-    FAC_coeff_list = []
+    GIPM_mat_list_1 = []
+    FAC_coeff_list_1 = []
 
-    for om_df in om_ave_list:
+    for om_df in om_ave_list_1:
         GIPM_mat, FAC_coeffs = gipm_transform_coeffs(om_df)
-        GIPM_mat_list.append(GIPM_mat)
-        FAC_coeff_list.append(FAC_coeffs)
+        GIPM_mat_list_1.append(GIPM_mat)
+        FAC_coeff_list_1.append(FAC_coeffs)
 
-    Cluster_GIPM_locs_list = []
+    Cluster_GIPM_locs_list_1 = []
 
-    for i,j,k in zip(dayside_cl_list, GIPM_mat_list, FAC_coeff_list):
-        Cluster_dt_loc = gipm_locs_quick(i, j, k)
-        Cluster_GIPM_locs_list.append(Cluster_dt_loc)
-
+    for p,i,j,k in zip(f_winds_all_1, df_list_c1, GIPM_mat_list_1, FAC_coeff_list_1):
+        Cluster_dt_loc = gipm_loc_transform(p, i, j, k)
+        Cluster_GIPM_locs_list_1.append(Cluster_dt_loc)
+        
     #for df in Cluster_GIPM_locs_list
-    CSV_path = '/data/scratch/apx059/Cluster_GIPM_SSC/'
-    startref = 1
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/'
     array_list = []
 
-    for df in Cluster_GIPM_locs_list:
-        #formatting numpy array correctly
-        list_loc = df['GIPM Loc'].tolist()
-        array_loc = np.asarray(list_loc)
-        list_time = df['datetime'].tolist()
-        array_time = np.asarray(list_time)
-        array_time = [[item] for item in array_time]
-        array_both = np.append(array_time, array_loc, axis=1)
-        array_list.append(array_both)
-        #saving file
-        ref = str(startref)
-        start_year = list_time[0].strftime("%Y")
-        start_year_int = int(start_year)
-        end_year_int = start_year_int + 1
-        end_year = str(end_year_int)
-        filename = CSV_path + 'Feb' + start_year + '_Feb' + end_year + 'df_' + ref + '.csv'
-        np.savetxt(filename,array_both, fmt='%s,%f,%f,%f')
-        startref = startref + 1
+    for df in Cluster_GIPM_locs_list_1:
+        if df.size > 0:
+            firstwin = df.loc[0, 'datetime']
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'C1.csv'
+            df.to_csv(fpath)
+                
+    #for df in omni_ave list:
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/OMNI_Aves/'
+    array_list = []
 
+    for om_df in om_ave_list_1:
+        if om_df.size > 0:
+            firstwin = om_df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'OMNI_C1.csv'
+            om_df.to_csv(fpath)
+
+    #####C2!!!!
+    #determine full windows lists
+    f_winds_all_2 = []
+
+    for df in df_list_c2:
+        f_winds = window_det(df)
+        f_winds_all_2.append(f_winds)
+    
+    om_ave_list_2 = []
+    
+    for fw in f_winds_all_2:
+        om_averages = omni_seg(om, fw)
+        om_averages['datetime']=pd.to_datetime(om_averages['datetime'])
+        om_averages = om_averages.set_index('datetime')
+        om_ave_list_2.append(om_averages)
+
+    #find GIPM rotation matrices and scaling coefficient for every Cluster location
+    GIPM_mat_list_2 = []
+    FAC_coeff_list_2 = []
+
+    for om_df in om_ave_list_2:
+        GIPM_mat, FAC_coeffs = gipm_transform_coeffs(om_df)
+        GIPM_mat_list_2.append(GIPM_mat)
+        FAC_coeff_list_2.append(FAC_coeffs)
+
+    Cluster_GIPM_locs_list_2 = []
+
+    for p,i,j,k in zip(f_winds_all_2, df_list_c2, GIPM_mat_list_2, FAC_coeff_list_2):
+        Cluster_dt_loc = gipm_loc_transform(p, i, j, k)
+        Cluster_GIPM_locs_list_2.append(Cluster_dt_loc)
+        
+    #for df in Cluster_GIPM_locs_list
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/'
+    array_list = []
+
+    for df in Cluster_GIPM_locs_list_2:
+        if df.size > 0:
+            firstwin = df.loc[0, 'datetime']
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'C2.csv'
+            df.to_csv(fpath)
+                
+    for om_df in om_ave_list_2:
+        if om_df.size > 0:
+            firstwin = om_df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'OMNI_C2.csv'
+            om_df.to_csv(fpath)
+                
+    #####C3
+    #determine full windows lists
+    f_winds_all_3 = []
+
+    for df in df_list_c3:
+        f_winds = window_det(df)
+        f_winds_all_3.append(f_winds)
+    
+    om_ave_list_3 = []
+    
+    for fw in f_winds_all_3:
+        om_averages = omni_seg(om, fw)
+        om_averages['datetime']=pd.to_datetime(om_averages['datetime'])
+        om_averages = om_averages.set_index('datetime')
+        om_ave_list_3.append(om_averages)
+
+    #find GIPM rotation matrices and scaling coefficient for every Cluster location
+    GIPM_mat_list_3 = []
+    FAC_coeff_list_3 = []
+
+    for om_df in om_ave_list_3:
+        GIPM_mat, FAC_coeffs = gipm_transform_coeffs(om_df)
+        GIPM_mat_list_3.append(GIPM_mat)
+        FAC_coeff_list_3.append(FAC_coeffs)
+
+    Cluster_GIPM_locs_list_3 = []
+
+    for p,i,j,k in zip(f_winds_all_3, df_list_c3, GIPM_mat_list_3, FAC_coeff_list_3):
+        Cluster_dt_loc = gipm_loc_transform(p, i, j, k)
+        Cluster_GIPM_locs_list_3.append(Cluster_dt_loc)
+        
+    #for df in Cluster_GIPM_locs_list
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/'
+    array_list = []
+
+    for df in Cluster_GIPM_locs_list_3:
+        if df.size > 0:
+            firstwin = df.loc[0, 'datetime']
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'C3.csv'
+            df.to_csv(fpath)
+
+    for om_df in om_ave_list_3:
+        if om_df.size > 0:
+            firstwin = om_df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'OMNI_C3.csv'
+            om_df.to_csv(fpath)
+        
+    #####C4!!!!
+    #determine full windows lists
+    f_winds_all_4 = []
+
+    for df in df_list_c4:
+        f_winds = window_det(df)
+        f_winds_all_4.append(f_winds)
+    
+    om_ave_list_4 = []
+    
+    for fw in f_winds_all_4:
+        om_averages = omni_seg(om, fw)
+        om_averages['datetime']=pd.to_datetime(om_averages['datetime'])
+        om_averages = om_averages.set_index('datetime')
+        om_ave_list_4.append(om_averages)
+
+    #find GIPM rotation matrices and scaling coefficient for every Cluster location
+    GIPM_mat_list_4 = []
+    FAC_coeff_list_4 = []
+
+    for om_df in om_ave_list_4:
+        GIPM_mat, FAC_coeffs = gipm_transform_coeffs(om_df)
+        GIPM_mat_list_4.append(GIPM_mat)
+        FAC_coeff_list_4.append(FAC_coeffs)
+
+    Cluster_GIPM_locs_list_4 = []
+
+    for p,i,j,k in zip(f_winds_all_4, df_list_c4, GIPM_mat_list_4, FAC_coeff_list_4):
+        Cluster_dt_loc = gipm_loc_transform(p, i, j, k)
+        Cluster_GIPM_locs_list_4.append(Cluster_dt_loc)
+        
+    #for df in Cluster_GIPM_locs_list
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/'
+    array_list = []
+
+    for df in Cluster_GIPM_locs_list_4:
+        if df.size > 0:
+            firstwin = df.loc[0, 'datetime']
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'C4.csv'
+            df.to_csv(fpath)
+    
+    for om_df in om_ave_list_4:
+        if om_df.size > 0:
+            firstwin = om_df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'OMNI_C4.csv'
+            om_df.to_csv(fpath)
+            
     #########################
     
-csvconv(list_of_cdfs, year_n)
+year_n = '2020'
+list_of_cdfs = cdf_list_path + year_n + '.csv'
+cdfconv_gipm(list_of_cdfs, year_n)
+
