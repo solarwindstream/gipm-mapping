@@ -40,11 +40,11 @@ def C4_cdf_conv(filename_a):
         df_a['Z_gse'] = df_a['Z_gse']/6371
         df_a['R_GSE'] = df_a['R_GSE']/6371
 
-        cdf_file_a.close()
+        #cdf_file_a.close()
 
     else:
         print(filename_a, 'data error')
-        cdf_file_a.close()
+        #cdf_file_a.close()
         #return empty df
         df_a = pd.DataFrame({'A' : []})
 
