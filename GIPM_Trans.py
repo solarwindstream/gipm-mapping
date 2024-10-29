@@ -26,11 +26,17 @@ def GIPM_trans(b_gse, v_gse):
         Y_GIPM = Y_GIPM/norm        
     
     Z_GIPM = np.cross(X_GIPM, Y_GIPM)
-
-    #print(X_GIPM, Y_GIPM, Z_GIPM)
-
-    #######need transformation matrix!
-    GIPM_trans = np.array([X_GIPM[0], Y_GIPM[0], Z_GIPM[0], X_GIPM[1], Y_GIPM[1], Z_GIPM[1], X_GIPM[2], Y_GIPM[2], Z_GIPM[2]]).reshape((3,3))
+    norm = np.linalg.norm(Z_GIPM)
+    Z_GIPM = Z_GIPM/norm  
     
-    return(GIPM_trans)
+    #print(X_GIPM, Y_GIPM, Z_GIPM)
+    
+    #######need transformation matrix!
+    GIPM_matrix = np.array([X_GIPM[0], Y_GIPM[0], Z_GIPM[0], X_GIPM[1], Y_GIPM[1], Z_GIPM[1], X_GIPM[2], Y_GIPM[2], Z_GIPM[2]]).reshape((3,3))
+    
+    ##...need inverse of this matrix D:
+    
+    GIPM_matrix_inv = np.linalg.inv(GIPM_matrix)
+    
+    return(GIPM_matrix_inv)
 
