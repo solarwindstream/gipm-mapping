@@ -54,6 +54,24 @@ tarf_extract(tgz_file_list)
 
 list_all = []
 
+path = "/data/scratch/apx059/23_Years_Data/C3/**"
+
+for path in glob.glob(path, recursive=True):
+    list_all.append(path)
+    
+#list with only files, not folders
+tgz_file_list = []
+
+for element in list_all:
+    if '.tgz' in element:
+        tgz_file_list.append(element)
+        
+tarf_extract(tgz_file_list)
+
+##unzip Cluster tgzs
+
+list_all = []
+
 path = "/data/scratch/apx059/23_Years_Data/C4/**"
 
 for path in glob.glob(path, recursive=True):
