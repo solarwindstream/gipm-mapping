@@ -25,7 +25,9 @@ def gipm_transform_coeffs(om_averages):
     #get bow shock shape for this average XMA
     #fitting_coeffs = merka05_surface_eq_array_GIPM(XMA)
     
-    GIPM_matrices = []
+    GIPM_X_Vecs = []
+    GIPM_Y_Vecs = []
+    GIPM_Z_Vecs = []
     FAC_coeffs =[]
 
     #now for each element in om_averages array, generate GIPM transform to transform Cluster points
@@ -39,10 +41,12 @@ def gipm_transform_coeffs(om_averages):
         v_z = om_averages.loc[i,'V_Z_gse']        
         b_gse = np.array([b_x,b_y,b_z])
         v_gse = np.array([v_x,v_y,v_z])
-        GIPM_t = GIPM_trans(b_gse, v_gse)
+        X_GIPM, Y_GIPM, Z_GIPM = GIPM_trans(b_gse, v_gse)
         
-        GIPM_matrices.append(GIPM_t)
-    
+        GIPM_X_Vecs.append(X_GIPM)
+        GIPM_Y_Vecs.append(Y_GIPM)
+        GIPM_Z_Vecs.append(Z_GIPM)
+        
     #now for each element find FAC
     
     for i in om_averages.index:
@@ -56,4 +60,4 @@ def gipm_transform_coeffs(om_averages):
         
         FAC_coeffs.append(FAC)
         
-    return(GIPM_matrices, FAC_coeffs)
+    return(GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs)

@@ -1,17 +1,17 @@
-#for every segment, transform location using given coeffs, for later plotting. Just C1 for now
+#for every segment, transform location using given coeffs, for later plotting.
 import numpy as np
 from new_xyz import new_xyz
 import datetime as dt
 import pandas as pd
 
-def gipm_loc_transform(only_full_windows, df_a, GIPM_matrices, FAC_coeffs):
+def gipm_loc_transform(only_full_windows, df_a, GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs):
     
     time_window = dt.timedelta(seconds=120)
     Cluster_GIPM_orbits = []
     
     #mask to just the two minute window in cluster data and find mean location
     
-    for i,k in zip(only_full_windows, FAC_coeffs):
+    for i,k,l,m,n in zip(only_full_windows, FAC_coeffs, GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs):
         start_time = i
         end_time = i + time_window
         mask = df_a.loc[(df_a.index >= start_time) & (df_a.index < end_time)]
@@ -23,9 +23,15 @@ def gipm_loc_transform(only_full_windows, df_a, GIPM_matrices, FAC_coeffs):
         
         #form location arrays for every observation and then transform using coeffs/FAC
         Cluster_GSE = np.array([x_gse_mean, y_gse_mean, z_gse_mean])
-        #rotate
-        trans_mat = GIPM_matrices[m]
-        Cluster_GIPM = new_xyz(Cluster_GSE, trans_mat)
+        
+        #coefficients in new frame 
+        
+        X_coeff = np.dot(Cluster_GSE,l)
+        Y_coeff = np.dot(Cluster_GSE,m)
+        Z_coeff = np.dot(Cluster_GSE,n)
+        
+        Cluster_GIPM = np.array([X_coeff, Y_coeff, Z_coeff])
+        
         #FAC scaling
         #r is scaled by this but the direction should remain the same
         x_a = Cluster_GIPM[0]

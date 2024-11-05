@@ -31,12 +31,18 @@ def GIPM_trans(b_gse, v_gse):
     
     #print(X_GIPM, Y_GIPM, Z_GIPM)
     
-    #######need transformation matrix!
-    GIPM_matrix = np.array([X_GIPM[0], Y_GIPM[0], Z_GIPM[0], X_GIPM[1], Y_GIPM[1], Z_GIPM[1], X_GIPM[2], Y_GIPM[2], Z_GIPM[2]]).reshape((3,3))
+    #check that the magnetic field is entirely in the XY plane:
     
+    z_comp = np.dot(b_gse,Z_GIPM)
+    z_comp_two_decimals = (round(z_comp, 2))
+    
+    if not z_comp == 0:
+        print('error in GIPM transform, z_comp:', z_comp)
+    
+    ##transformation matrix
+    #GIPM_matrix = np.array([X_GIPM[0], Y_GIPM[0], Z_GIPM[0], X_GIPM[1], Y_GIPM[1], Z_GIPM[1], X_GIPM[2], Y_GIPM[2], Z_GIPM[2]]).reshape((3,3))
     ##...need inverse of this matrix D:
+    #GIPM_matrix_inv = np.linalg.inv(GIPM_matrix)
     
-    GIPM_matrix_inv = np.linalg.inv(GIPM_matrix)
-    
-    return(GIPM_matrix_inv)
+    return(X_GIPM, Y_GIPM, Z_GIPM)
 
