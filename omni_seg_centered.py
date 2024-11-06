@@ -58,10 +58,9 @@ def omni_seg(om_df, only_full_windows):
         
     om_averages = pd.DataFrame({'datetime': only_full_windows, 'Np': omni_N_ave, 'B_mag': omni_B_ave, 'V_gse': omni_V_ave, 'B_X_gse': omni_Bx_ave, 'B_Y_gse': omni_By_ave, 'B_Z_gse': omni_Bz_ave, 'V_X_gse': omni_Vx_ave, 'V_Y_gse': omni_Vy_ave, 'V_Z_gse': omni_Vz_ave, 'M_A':omni_MA_ave, 'cone angle':omni_CA_ave})
 
-    om_averages['Ave B']= (om_averages['B_X_gse']**2 + om_averages['B_Y_gse']**2 + om_averages['B_Z_gse']**2)**0.5
-    om_averages['Norm Bx'] = om_averages['B_X_gse']/om_averages['Ave B']
-    om_averages['Norm By'] = om_averages['B_Y_gse']/om_averages['Ave B']
-    om_averages['Norm Bz'] = om_averages['B_Z_gse']/om_averages['Ave B']
+    om_averages['Norm Bx'] = om_averages['B_X_gse']/om_averages['B_mag']
+    om_averages['Norm By'] = om_averages['B_Y_gse']/om_averages['B_mag']
+    om_averages['Norm Bz'] = om_averages['B_Z_gse']/om_averages['B_mag']
     
     return(om_averages)
 
