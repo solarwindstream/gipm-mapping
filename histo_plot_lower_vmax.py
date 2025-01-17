@@ -8,25 +8,25 @@ import matplotlib
 
 #function takes cluster DF, makes histogram and plots
 
-def histo_plot(cluster_df, bin_size, XMA_all, angle):
+def histo_plot(HistXY_lowZ, HistXZ_lowZ, XMA_all, xedg, yedg, zedg, title, angle):
     
-    x_locs = cluster_df['Cluster Loc GIPM X'].to_numpy()
-    y_locs = cluster_df['Cluster Loc GIPM Y'].to_numpy()
-    z_locs = cluster_df['Cluster Loc GIPM Z'].to_numpy()
+    #x_locs = cluster_df['Cluster Loc GIPM X'].to_numpy()
+    #y_locs = cluster_df['Cluster Loc GIPM Y'].to_numpy()
+    #z_locs = cluster_df['Cluster Loc GIPM Z'].to_numpy()
 
     ##use numpy histogram to get actual bin numbers (1RE bins)
     
-    x_bin_edges = np.arange(0.0, 30.0, bin_size)
-    y_bin_edges = np.arange(-30.0, 30.0, bin_size)
-    HistXY_lowZ, xedg, yedg = np.histogram2d(x_locs, y_locs, bins=[x_bin_edges, y_bin_edges])
-    HistXY_lowZ = HistXY_lowZ.T
+    #x_bin_edges = np.arange(0.0, 30.0, bin_size)
+    #y_bin_edges = np.arange(-30.0, 30.0, bin_size)
+    #HistXY_lowZ, xedg, yedg = np.histogram2d(x_locs, y_locs, bins=[x_bin_edges, y_bin_edges])
+    #HistXY_lowZ = HistXY_lowZ.T
 
-    z_bin_edges = np.arange(-30.0,30.0, bin_size)
-    HistXZ_lowZ, xedg, zedg = np.histogram2d(x_locs, z_locs, bins=[x_bin_edges, z_bin_edges])
-    HistXZ_lowZ = HistXZ_lowZ.T
+    #z_bin_edges = np.arange(-30.0,30.0, bin_size)
+    #HistXZ_lowZ, xedg, zedg = np.histogram2d(x_locs, z_locs, bins=[x_bin_edges, z_bin_edges])
+    #HistXZ_lowZ = HistXZ_lowZ.T
 
-    HistXY_lowZ[HistXY_lowZ == 0] = np.nan
-    HistXZ_lowZ[HistXZ_lowZ == 0] = np.nan
+    #HistXY_lowZ[HistXY_lowZ == 0] = np.nan
+    #HistXZ_lowZ[HistXZ_lowZ == 0] = np.nan
 
     #histo plot function
 
@@ -85,15 +85,6 @@ def histo_plot(cluster_df, bin_size, XMA_all, angle):
     X_shue = r*(np.cos(theta))
     R_shue = r*(np.sin(theta))
     
-    if angle < 30:
-        title_a = 'Radial'
-    elif angle > 60:
-        title_a = 'Perpendicular'
-    else:
-        title_a = 'Spiral'
-
-    title = '1 Yr Multi Sc Cluster Coverage (Temp), ' + title_a + ' IMF ' + str(bin_size) + ' RE bins, Low Z'
-    
     ###################
     fig, ax = plt.subplots()
     subfigs = fig.subfigures(1, 1)
@@ -118,7 +109,6 @@ def histo_plot(cluster_df, bin_size, XMA_all, angle):
     x_s = X_BS_nose
     y_s = 0
     x_e = 29
-     
     y_e = -x_e*(tan_angle)
 
     #want to also have line for just solar wind flow along y=0
@@ -127,7 +117,7 @@ def histo_plot(cluster_df, bin_size, XMA_all, angle):
     #ax.plot([x_s, x_e], [y_s, y_e], color='k',linewidth=1)
     cmap = matplotlib.colormaps.get_cmap('Blues') 
     cmap.set_bad(color='lightgrey')
-    im = ax0.imshow(np.flipud(HistXY_lowZ), interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], yedg[0], yedg[-1]], vmax=20, cmap = cmap)
+    im = ax0.imshow(HistXY_lowZ, interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], yedg[0], yedg[-1]], vmax=200, cmap = cmap)
     ax0.plot([x_s, x_e], [y_s, y_e], color='k',linewidth=1)
     ax0.set_ylim(-30,30)
     #ax.set_xlim(0,30)
@@ -146,7 +136,7 @@ def histo_plot(cluster_df, bin_size, XMA_all, angle):
 
 
     ax1.hlines(y=0, xmin= 0, xmax=30, linewidth=1, color='k')
-    ax1.imshow(np.flipud(HistXZ_lowZ), interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], zedg[0], zedg[-1]], vmax=20, cmap = cmap)
+    ax1.imshow(HistXZ_lowZ, interpolation='nearest', origin='lower', extent=[xedg[0], xedg[-1], zedg[0], zedg[-1]], vmax=200, cmap = cmap)
     ax1.set_ylim(-30,30)
     #ax.set_xlim(0,30)
     ax1.invert_xaxis()
