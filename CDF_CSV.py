@@ -71,12 +71,15 @@ def cdfconv_gipm(path, year):
     omni_files = pd.read_csv(omni_csv_list_path, header=None)
     omni_files = omni_files.rename(columns={0:'fnames'})
     list_omni_csvs = omni_files['fnames'].to_list()
-    res = [i for i in list_omni_csvs if year_n in i]
-    omni_path_1 = '/data/scratch/apx059/OMNI_Raw/' + res[0]
-    omni_path_2 = '/data/scratch/apx059/OMNI_Raw/' + res[1]
+    #res doesn't work because omni date time strings contain non-date repeats
+    #res = [i for i in list_omni_csvs if year_n in i]
+    #omni_hros_1min_20200201000000_20210201000000.csv
+    #omni_hros_1min_20190201000000_20200201000000.csv
+    omni_path_1 = '/data/scratch/apx059/OMNI_Raw/' + 'omni_hros_1min_20020201000000_20030201000000.csv'
+    omni_path_2 = '/data/scratch/apx059/OMNI_Raw/' + 'omni_hros_1min_20030201000000_20040201000000.csv'
     om_1 = pd.read_csv(omni_path_1)
     om_2 = pd.read_csv(omni_path_2)
-    om = pd.concat([om1, om2])
+    om = pd.concat([om_1, om_2])
 
     om['datetime'] = pd.to_datetime(om['datetime'])
     om = om.set_index('datetime')
@@ -102,11 +105,13 @@ def cdfconv_gipm(path, year):
         om_ave_list_1.append(om_averages)
 
     #find GIPM rotation matrices and scaling coefficient for every Cluster location
-    GIPM_mat_list_1 = []
+    GIPM_X_vec_list_1 = []
+    GIPM_Y_vec_list_1 = []
+    GIPM_Z_vec_list_1 = []
     FAC_coeff_list_1 = []
 
     for om_df in om_ave_list_1:
-        GIPM_mat, FAC_coeffs = gipm_transform_coeffs(om_df)
+        GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs = gipm_transform_coeffs(om_df)
         GIPM_mat_list_1.append(GIPM_mat)
         FAC_coeff_list_1.append(FAC_coeffs)
 
@@ -117,8 +122,7 @@ def cdfconv_gipm(path, year):
         Cluster_GIPM_locs_list_1.append(Cluster_dt_loc)
         
     #for df in Cluster_GIPM_locs_list
-    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/'
-    array_list = []
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/Updated_GIPM/'
 
     for df in Cluster_GIPM_locs_list_1:
         if df.size > 0:
@@ -129,7 +133,6 @@ def cdfconv_gipm(path, year):
                 
     #for df in omni_ave list:
     CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/OMNI_Aves/'
-    array_list = []
 
     for om_df in om_ave_list_1:
         if om_df.size > 0:
@@ -170,7 +173,7 @@ def cdfconv_gipm(path, year):
         Cluster_GIPM_locs_list_2.append(Cluster_dt_loc)
         
     #for df in Cluster_GIPM_locs_list
-    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/'
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/Updated_GIPM/'
     array_list = []
 
     for df in Cluster_GIPM_locs_list_2:
@@ -179,7 +182,10 @@ def cdfconv_gipm(path, year):
             firstwin = str(firstwin)
             fpath = CSV_path + firstwin + 'C2.csv'
             df.to_csv(fpath)
-                
+    
+    #for df in omni_ave list:
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/OMNI_Aves/'
+           
     for om_df in om_ave_list_2:
         if om_df.size > 0:
             firstwin = om_df.index[0]
@@ -219,7 +225,7 @@ def cdfconv_gipm(path, year):
         Cluster_GIPM_locs_list_3.append(Cluster_dt_loc)
         
     #for df in Cluster_GIPM_locs_list
-    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/'
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/Updated_GIPM/'
     array_list = []
 
     for df in Cluster_GIPM_locs_list_3:
@@ -228,6 +234,9 @@ def cdfconv_gipm(path, year):
             firstwin = str(firstwin)
             fpath = CSV_path + firstwin + 'C3.csv'
             df.to_csv(fpath)
+    
+    #for df in omni_ave list:
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/OMNI_Aves/'
 
     for om_df in om_ave_list_3:
         if om_df.size > 0:
@@ -268,7 +277,7 @@ def cdfconv_gipm(path, year):
         Cluster_GIPM_locs_list_4.append(Cluster_dt_loc)
         
     #for df in Cluster_GIPM_locs_list
-    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/'
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/Updated_GIPM/'
     array_list = []
 
     for df in Cluster_GIPM_locs_list_4:
@@ -278,6 +287,9 @@ def cdfconv_gipm(path, year):
             fpath = CSV_path + firstwin + 'C4.csv'
             df.to_csv(fpath)
     
+    #for df in omni_ave list:
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/OMNI_Aves/'
+
     for om_df in om_ave_list_4:
         if om_df.size > 0:
             firstwin = om_df.index[0]
@@ -287,7 +299,7 @@ def cdfconv_gipm(path, year):
             
     #########################
     
-year_n = '2020'
+year_n = '2003'
 list_of_cdfs = cdf_list_path + year_n + '.csv'
 cdfconv_gipm(list_of_cdfs, year_n)
 

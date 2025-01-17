@@ -30,13 +30,19 @@ def GIPM_trans(b_gse, v_gse):
     Z_GIPM = Z_GIPM/norm  
     
     #print(X_GIPM, Y_GIPM, Z_GIPM)
+    if not X_GIPM.shape == (3,):
+        print('error XGIPM not correct shape')
+    if not Y_GIPM.shape == (3,):
+        print('error YGIPM not correct shape')  
+    if not Z_GIPM.shape == (3,):
+        print('error ZGIPM not correct shape')
     
     #check that the magnetic field is entirely in the XY plane:
     
     z_comp = np.dot(b_gse,Z_GIPM)
     z_comp_two_decimals = (round(z_comp, 2))
     
-    if not z_comp == 0:
+    if not z_comp_two_decimals == 0:
         print('error in GIPM transform, z_comp:', z_comp)
     
     ##transformation matrix

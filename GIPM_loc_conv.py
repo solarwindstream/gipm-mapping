@@ -7,7 +7,9 @@ import pandas as pd
 def gipm_loc_transform(only_full_windows, df_a, GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs):
     
     time_window = dt.timedelta(seconds=120)
-    Cluster_GIPM_orbits = []
+    Cluster_GIPM_X = []
+    Cluster_GIPM_Y = []
+    Cluster_GIPM_Z = []
     
     #mask to just the two minute window in cluster data and find mean location
     
@@ -15,7 +17,6 @@ def gipm_loc_transform(only_full_windows, df_a, GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z
         start_time = i
         end_time = i + time_window
         mask = df_a.loc[(df_a.index >= start_time) & (df_a.index < end_time)]
-        m = FAC_coeffs.index(k)
         
         x_gse_mean = mask['X_gse'].mean()
         y_gse_mean = mask['Y_gse'].mean()
@@ -24,12 +25,18 @@ def gipm_loc_transform(only_full_windows, df_a, GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z
         #form location arrays for every observation and then transform using coeffs/FAC
         Cluster_GSE = np.array([x_gse_mean, y_gse_mean, z_gse_mean])
         
+        #print('X, Y, Z Vecs', l,m,n,'Cluster Loc', Cluster_GSE)
+        
         #coefficients in new frame 
         
         X_coeff = np.dot(Cluster_GSE,l)
         Y_coeff = np.dot(Cluster_GSE,m)
         Z_coeff = np.dot(Cluster_GSE,n)
         
+        #print('X_coeff shape', X_coeff.shape)
+        #print('Y_coeff shape', Y_coeff.shape)
+        #print('Z_coeff shape', Z_coeff.shape)
+       
         Cluster_GIPM = np.array([X_coeff, Y_coeff, Z_coeff])
         
         #FAC scaling
@@ -49,12 +56,14 @@ def gipm_loc_transform(only_full_windows, df_a, GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z
         y_a = r_a*(np.sin(theta_a))*(np.sin(phi_a))
         z_a = r_a*(np.cos(theta_a))
                 
-        Cluster_GIPM = np.array([x_a, y_a, z_a])
+        #Cluster_GIPM = np.array([x_a, y_a, z_a])
                 
         #append result
-        Cluster_GIPM_orbits.append(Cluster_GIPM)
+        Cluster_GIPM_X.append(x_a)
+        Cluster_GIPM_Y.append(y_a)
+        Cluster_GIPM_Z.append(z_a)
         
-    Cluster_dt_loc = pd.DataFrame({'datetime':only_full_windows, 'GIPM Loc': Cluster_GIPM_orbits})
+    Cluster_dt_loc = pd.DataFrame({'datetime':only_full_windows, 'GIPM X': Cluster_GIPM_X, 'GIPM Y': Cluster_GIPM_Y, 'GIPM Z': Cluster_GIPM_Z})
         
 
     return(Cluster_dt_loc)  
