@@ -1,0 +1,540 @@
+#Apocrita script for 4min GIPM conversion w/spectra. Will require virtual env for cdflib.
+
+import datetime as dt
+import cdflib
+import pandas as pd
+import numpy as np
+import math
+
+from C1_Cluster_CDF_conv import C1_cdf_conv
+from C2_Cluster_CDF_conv import C2_cdf_conv
+from C3_Cluster_CDF_conv import C3_cdf_conv
+from C4_Cluster_CDF_conv import C4_cdf_conv
+
+from window_det_4min import window_det
+from omni_seg_centered_4mins import omni_seg
+from gipm_transform_coeffs import gipm_transform_coeffs
+from GIPM_loc_conv import gipm_loc_transform
+from new_xyz import new_xyz
+from cone_angle_dfs import cone_angle_dfs
+from math import pi
+import statistics
+
+#2001
+
+cdf_list_path = '/data/scratch/apx059/23_Years_Data/CDFs/CDFs_'
+
+def cdfconv_gipm(path, year):
+    
+    #now make those cdfs into CSVs!
+    list_files = pd.read_csv(path, header=None)
+    list_files = list_files.rename(columns={0:'fnames'})
+    list_cdfs = list_files['fnames'].to_list()
+    year_path = '/data/scratch/apx059/23_Years_Data/CDFs/CDFs_' + year_n + '/'
+    
+    df_list_c1 = []
+    df_list_c2 = []
+    df_list_c3 = []
+    df_list_c4 = []
+
+    for i in list_cdfs:
+        if 'C1' in i:
+            fpath = year_path + i
+            df_c1 = C1_cdf_conv(fpath)
+            a = df_c1.empty
+            if not a:
+                df_list_c1.append(df_c1)
+        if 'C2' in i:
+            fpath = year_path + i
+            df_c2 = C2_cdf_conv(fpath)
+            a = df_c2.empty
+            if not a:
+                df_list_c2.append(df_c2)
+        if 'C3' in i:   
+            fpath = year_path + i
+            df_c3 = C3_cdf_conv(fpath)
+            a = df_c3.empty
+            if not a:
+                df_list_c3.append(df_c3) 
+        if 'C4' in i:   
+            fpath = year_path + i
+            df_c4 = C4_cdf_conv(fpath)
+            a = df_c4.empty
+            if not a:
+                df_list_c4.append(df_c4)
+                
+    #list all OMNI files, but only import relevant ones
+    #load ONLY this year's omni dfs
+    
+    #omni_csv_list_path = r'/data/home/apx059/gipm-mapping/listofomnis.csv'
+    #omni_files = pd.read_csv(omni_csv_list_path, header=None)
+    #omni_files = omni_files.rename(columns={0:'fnames'})
+    #list_omni_csvs = omni_files['fnames'].to_list()
+    omni_path_1 = '/data/scratch/apx059/OMNI_Raw/' + 'omni_hros_1min_20220201000000_20230201000000.csv'
+    omni_path_2 = '/data/scratch/apx059/OMNI_Raw/' + 'omni_hros_1min_20230201000000_20240201000000.csv'
+    om_1 = pd.read_csv(omni_path_1)
+    om_2 = pd.read_csv(omni_path_2)
+    om = pd.concat([om_1, om_2])
+
+    om['datetime'] = pd.to_datetime(om['datetime'])
+    om = om.set_index('datetime')
+
+    #determine full windows lists
+    f_winds_all_1 = []
+
+    for df in df_list_c1:
+        f_winds = window_det(df)
+        f_winds_all_1.append(f_winds)
+    
+    om_ave_list_1 = []
+    
+    for fw in f_winds_all_1:
+        om_averages = omni_seg(om, fw)
+        om_averages['datetime']=pd.to_datetime(om_averages['datetime'])
+        om_averages = om_averages.set_index('datetime')
+        om_ave_list_1.append(om_averages)
+
+    #find GIPM rotation matrices and scaling coefficient for every Cluster location
+    GIPM_X_vec_list_1 = []
+    GIPM_Y_vec_list_1 = []
+    GIPM_Z_vec_list_1 = []
+    FAC_coeff_list_1 = []
+
+    for om_df in om_ave_list_1:
+        GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs = gipm_transform_coeffs(om_df)
+        GIPM_X_vec_list_1.append(GIPM_X_Vecs)
+        GIPM_Y_vec_list_1.append(GIPM_Y_Vecs)
+        GIPM_Z_vec_list_1.append(GIPM_Z_Vecs)
+        FAC_coeff_list_1.append(FAC_coeffs)
+
+    Cluster_GIPM_locs_list_1 = []
+
+    for p,q,i,j,k,m in zip(f_winds_all_1, df_list_c1, GIPM_X_vec_list_1, GIPM_Y_vec_list_1, GIPM_Z_vec_list_1, FAC_coeff_list_1):
+        Cluster_dt_loc = gipm_loc_transform(p,q,i,j,k,m)
+        Cluster_GIPM_locs_list_1.append(Cluster_dt_loc)
+        
+    gipm_df_c1 = []
+
+    for df_c1 in Cluster_GIPM_locs_list_1:
+        df_c1['datetime'] = pd.to_datetime(df_c1['datetime'])
+        df_c1 = df_c1.set_index('datetime')
+        gipm_df_c1.append(df_c1)
+
+    #this bit is for the new dfs 
+
+    list_expanded_dfs_1 = []
+
+    time_window = dt.timedelta(seconds=240)
+
+    for i,j,k in zip(df_list_c1, gipm_df_c1, om_ave_list_1):
+
+        cl_min_list = []
+        cl_max_list = []
+        cl_mean_list = []
+        cl_median_list = []
+        cl_std_list = []
+        cone_angle_list = []
+        ma_list = []
+        times = []
+
+        for m in j.index:
+            start_time = m
+            end_time = m + time_window
+            mask = i.loc[(i.index >= start_time) & (i.index < end_time)]
+            Cluster_list = mask['B_mag'].tolist()
+            omni_ave_B = k.loc[m, 'B_mag']
+            omni_ave_c_a = k.loc[m, 'cone angle']
+            omni_ave_m_a = k.loc[m, 'M_A']
+            
+            if Cluster_list:
+                Cluster_min = min(Cluster_list)
+                Cluster_max = max(Cluster_list)
+                Cluster_median = statistics.median(Cluster_list)
+                Cluster_mean = sum(Cluster_list)/len(Cluster_list)
+                Cluster_stf = statistics.stdev(Cluster_list)
+                Cluster_stf_rat = Cluster_stf/omni_ave_B
+                Cluster_min_rat = Cluster_min/omni_ave_B
+                Cluster_mean_rat = Cluster_mean/omni_ave_B
+                Cluster_max_rat = Cluster_max/omni_ave_B
+                Cluster_median_rat = Cluster_median/omni_ave_B
+                
+                cl_min_list.append(Cluster_min_rat)
+                cl_mean_list.append(Cluster_mean_rat)
+                cl_max_list.append(Cluster_max_rat)
+                cl_median_list.append(Cluster_median_rat)
+                cl_std_list.append(Cluster_stf_rat)
+                cone_angle_list.append(omni_ave_c_a)
+                ma_list.append(omni_ave_m_a)
+                times.append(m)
+
+        if cl_min_list:
+            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list, 'B median': cl_median_list, 'B standard deviation':cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list})
+            B_val_df = B_val_df.set_index('datetime')
+            new_cl_df = j.join([B_val_df])
+            list_expanded_dfs_1.append(new_cl_df)
+
+        
+    #for df in Cluster_GIPM_locs_list
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'
+
+    for df in list_expanded_dfs_1:
+        if df.size > 0:
+            firstwin = df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'C1.csv'
+            df.to_csv(fpath)
+            
+    #for df in omni_ave list:
+
+    for om_df in om_ave_list_1:
+        if om_df.size > 0:
+            firstwin = om_df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'OMNI_C1.csv'
+            om_df.to_csv(fpath)
+            
+    #####C2
+    
+        #determine full windows lists
+    f_winds_all_2 = []
+
+    for df in df_list_c2:
+        f_winds = window_det(df)
+        f_winds_all_2.append(f_winds)
+    
+    om_ave_list_2 = []
+    
+    for fw in f_winds_all_2:
+        om_averages = omni_seg(om, fw)
+        om_averages['datetime']=pd.to_datetime(om_averages['datetime'])
+        om_averages = om_averages.set_index('datetime')
+        om_ave_list_2.append(om_averages)
+
+    #find GIPM rotation matrices and scaling coefficient for every Cluster location
+    GIPM_X_vec_list_2 = []
+    GIPM_Y_vec_list_2 = []
+    GIPM_Z_vec_list_2 = []
+    FAC_coeff_list_2 = []
+
+    for om_df in om_ave_list_2:
+        GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs = gipm_transform_coeffs(om_df)
+        GIPM_X_vec_list_2.append(GIPM_X_Vecs)
+        GIPM_Y_vec_list_2.append(GIPM_Y_Vecs)
+        GIPM_Z_vec_list_2.append(GIPM_Z_Vecs)
+        FAC_coeff_list_2.append(FAC_coeffs)
+
+    Cluster_GIPM_locs_list_2 = []
+
+    for p,q,i,j,k,m in zip(f_winds_all_2, df_list_c2, GIPM_X_vec_list_2, GIPM_Y_vec_list_2, GIPM_Z_vec_list_2, FAC_coeff_list_2):
+        Cluster_dt_loc = gipm_loc_transform(p,q,i,j,k,m)
+        Cluster_GIPM_locs_list_2.append(Cluster_dt_loc)
+        
+    gipm_df_c2 = []
+
+    for df_c2 in Cluster_GIPM_locs_list_2:
+        df_c2['datetime'] = pd.to_datetime(df_c2['datetime'])
+        df_c2 = df_c2.set_index('datetime')
+        gipm_df_c2.append(df_c2)
+
+    #this bit is for the new dfs 
+
+    list_expanded_dfs_2 = []
+
+    for i,j,k in zip(df_list_c2, gipm_df_c2, om_ave_list_2):
+
+        cl_min_list = []
+        cl_max_list = []
+        cl_mean_list = []
+        cl_median_list = []
+        cl_std_list = []
+        cone_angle_list = []
+        ma_list = []
+        times = []
+
+        for m in j.index:
+            start_time = m
+            end_time = m + time_window
+            mask = i.loc[(i.index >= start_time) & (i.index < end_time)]
+            Cluster_list = mask['B_mag'].tolist()
+            omni_ave_B = k.loc[m, 'B_mag']
+            omni_ave_c_a = k.loc[m, 'cone angle']
+            omni_ave_m_a = k.loc[m, 'M_A']
+            
+            if Cluster_list:
+                Cluster_min = min(Cluster_list)
+                Cluster_max = max(Cluster_list)
+                Cluster_median = statistics.median(Cluster_list)
+                Cluster_mean = sum(Cluster_list)/len(Cluster_list)
+                Cluster_stf = statistics.stdev(Cluster_list)
+                Cluster_stf_rat = Cluster_stf/omni_ave_B
+                Cluster_min_rat = Cluster_min/omni_ave_B
+                Cluster_mean_rat = Cluster_mean/omni_ave_B
+                Cluster_max_rat = Cluster_max/omni_ave_B
+                Cluster_median_rat = Cluster_median/omni_ave_B
+                
+                cl_min_list.append(Cluster_min_rat)
+                cl_mean_list.append(Cluster_mean_rat)
+                cl_max_list.append(Cluster_max_rat)
+                cl_median_list.append(Cluster_median_rat)
+                cl_std_list.append(Cluster_stf_rat)
+                cone_angle_list.append(omni_ave_c_a)
+                ma_list.append(omni_ave_m_a)
+                times.append(m)
+
+        if cl_min_list:
+            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list,'B median': cl_median_list,'B standard deviation':cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list})
+            B_val_df = B_val_df.set_index('datetime')
+            new_cl_df = j.join([B_val_df])
+            list_expanded_dfs_2.append(new_cl_df)
+
+        
+    #for df in Cluster_GIPM_locs_list
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'
+
+    for df in list_expanded_dfs_2:
+        if df.size > 0:
+            firstwin = df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'C2.csv'
+            df.to_csv(fpath)
+            
+    #for df in omni_ave list:
+
+    for om_df in om_ave_list_2:
+        if om_df.size > 0:
+            firstwin = om_df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'OMNI_C2.csv'
+            om_df.to_csv(fpath)
+    
+    #####C3
+    
+    #determine full windows lists
+    f_winds_all_3 = []
+
+    for df in df_list_c3:
+        f_winds = window_det(df)
+        f_winds_all_3.append(f_winds)
+    
+    om_ave_list_3 = []
+    
+    for fw in f_winds_all_3:
+        om_averages = omni_seg(om, fw)
+        om_averages['datetime']=pd.to_datetime(om_averages['datetime'])
+        om_averages = om_averages.set_index('datetime')
+        om_ave_list_3.append(om_averages)
+
+    #find GIPM rotation matrices and scaling coefficient for every Cluster location
+    GIPM_X_vec_list_3 = []
+    GIPM_Y_vec_list_3 = []
+    GIPM_Z_vec_list_3 = []
+    FAC_coeff_list_3 = []
+
+    for om_df in om_ave_list_3:
+        GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs = gipm_transform_coeffs(om_df)
+        GIPM_X_vec_list_3.append(GIPM_X_Vecs)
+        GIPM_Y_vec_list_3.append(GIPM_Y_Vecs)
+        GIPM_Z_vec_list_3.append(GIPM_Z_Vecs)
+        FAC_coeff_list_3.append(FAC_coeffs)
+
+    Cluster_GIPM_locs_list_3 = []
+
+    for p,q,i,j,k,m in zip(f_winds_all_3, df_list_c3, GIPM_X_vec_list_3, GIPM_Y_vec_list_3, GIPM_Z_vec_list_3, FAC_coeff_list_3):
+        Cluster_dt_loc = gipm_loc_transform(p,q,i,j,k,m)
+        Cluster_GIPM_locs_list_3.append(Cluster_dt_loc)
+        
+    gipm_df_c3 = []
+
+    for df_c3 in Cluster_GIPM_locs_list_3:
+        df_c3['datetime'] = pd.to_datetime(df_c3['datetime'])
+        df_c3 = df_c3.set_index('datetime')
+        gipm_df_c3.append(df_c3)
+
+    #this bit is for the new dfs 
+
+    list_expanded_dfs_3 = []
+
+    for i,j,k in zip(df_list_c3, gipm_df_c3, om_ave_list_3):
+
+        cl_min_list = []
+        cl_max_list = []
+        cl_mean_list = []
+        cl_median_list = []
+        cl_std_list = []
+        cone_angle_list = []
+        ma_list = []
+        times = []
+
+        for m in j.index:
+            start_time = m
+            end_time = m + time_window
+            mask = i.loc[(i.index >= start_time) & (i.index < end_time)]
+            Cluster_list = mask['B_mag'].tolist()
+            omni_ave_B = k.loc[m, 'B_mag']
+            omni_ave_c_a = k.loc[m, 'cone angle']
+            omni_ave_m_a = k.loc[m, 'M_A']
+            
+            if Cluster_list:
+                Cluster_min = min(Cluster_list)
+                Cluster_max = max(Cluster_list)
+                Cluster_median = statistics.median(Cluster_list)
+                Cluster_mean = sum(Cluster_list)/len(Cluster_list)
+                Cluster_stf = statistics.stdev(Cluster_list)
+                Cluster_stf_rat = Cluster_stf/omni_ave_B
+                Cluster_min_rat = Cluster_min/omni_ave_B
+                Cluster_mean_rat = Cluster_mean/omni_ave_B
+                Cluster_max_rat = Cluster_max/omni_ave_B
+                Cluster_median_rat = Cluster_median/omni_ave_B
+                
+                cl_min_list.append(Cluster_min_rat)
+                cl_mean_list.append(Cluster_mean_rat)
+                cl_max_list.append(Cluster_max_rat)
+                cl_median_list.append(Cluster_median_rat)
+                cl_std_list.append(Cluster_stf_rat)
+                cone_angle_list.append(omni_ave_c_a)
+                ma_list.append(omni_ave_m_a)
+                times.append(m)
+
+        if cl_min_list:
+            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list,'B median': cl_median_list, 'B standard deviation': cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list})
+            B_val_df = B_val_df.set_index('datetime')
+            new_cl_df = j.join([B_val_df])
+            list_expanded_dfs_3.append(new_cl_df)
+
+    for df in list_expanded_dfs_3:
+        if df.size > 0:
+            firstwin = df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'C3.csv'
+            df.to_csv(fpath)
+
+    for om_df in om_ave_list_3:
+        if om_df.size > 0:
+            firstwin = om_df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'OMNI_C3.csv'
+            om_df.to_csv(fpath)
+            
+    ######C4
+    
+    #determine full windows lists
+    f_winds_all_4 = []
+
+    for df in df_list_c4:
+        f_winds = window_det(df)
+        f_winds_all_4.append(f_winds)
+    
+    om_ave_list_4 = []
+    
+    for fw in f_winds_all_4:
+        om_averages = omni_seg(om, fw)
+        om_averages['datetime']=pd.to_datetime(om_averages['datetime'])
+        om_averages = om_averages.set_index('datetime')
+        om_ave_list_4.append(om_averages)
+
+    #find GIPM rotation matrices and scaling coefficient for every Cluster location
+    GIPM_X_vec_list_4 = []
+    GIPM_Y_vec_list_4 = []
+    GIPM_Z_vec_list_4 = []
+    FAC_coeff_list_4 = []
+
+    for om_df in om_ave_list_4:
+        GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs = gipm_transform_coeffs(om_df)
+        GIPM_X_vec_list_4.append(GIPM_X_Vecs)
+        GIPM_Y_vec_list_4.append(GIPM_Y_Vecs)
+        GIPM_Z_vec_list_4.append(GIPM_Z_Vecs)
+        FAC_coeff_list_4.append(FAC_coeffs)
+
+    Cluster_GIPM_locs_list_4 = []
+
+    for p,q,i,j,k,m in zip(f_winds_all_4, df_list_c4, GIPM_X_vec_list_4, GIPM_Y_vec_list_4, GIPM_Z_vec_list_4, FAC_coeff_list_4):
+        Cluster_dt_loc = gipm_loc_transform(p,q,i,j,k,m)
+        Cluster_GIPM_locs_list_4.append(Cluster_dt_loc)
+        
+    gipm_df_c4 = []
+
+    for df_c4 in Cluster_GIPM_locs_list_4:
+        df_c4['datetime'] = pd.to_datetime(df_c4['datetime'])
+        df_c4 = df_c4.set_index('datetime')
+        gipm_df_c4.append(df_c4)
+
+    #this bit is for the new dfs 
+
+    list_expanded_dfs_4 = []
+
+    time_window = dt.timedelta(seconds=240)
+
+    for i,j,k in zip(df_list_c4, gipm_df_c4, om_ave_list_4):
+
+        cl_min_list = []
+        cl_max_list = []
+        cl_mean_list = []
+        cl_median_list = []
+        cl_std_list = []
+        cone_angle_list = []
+        ma_list = []
+        times = []
+
+        for m in j.index:
+            start_time = m
+            end_time = m + time_window
+            mask = i.loc[(i.index >= start_time) & (i.index < end_time)]
+            Cluster_list = mask['B_mag'].tolist()
+            omni_ave_B = k.loc[m, 'B_mag']
+            omni_ave_c_a = k.loc[m, 'cone angle']
+            omni_ave_m_a = k.loc[m, 'M_A']
+            
+            if Cluster_list:
+                Cluster_min = min(Cluster_list)
+                Cluster_max = max(Cluster_list)
+                Cluster_median = statistics.median(Cluster_list)
+                Cluster_mean = sum(Cluster_list)/len(Cluster_list)
+                Cluster_stf = statistics.stdev(Cluster_list)
+                Cluster_stf_rat = Cluster_stf/omni_ave_B
+                Cluster_min_rat = Cluster_min/omni_ave_B
+                Cluster_mean_rat = Cluster_mean/omni_ave_B
+                Cluster_max_rat = Cluster_max/omni_ave_B
+                Cluster_median_rat = Cluster_median/omni_ave_B
+                
+                cl_min_list.append(Cluster_min_rat)
+                cl_mean_list.append(Cluster_mean_rat)
+                cl_max_list.append(Cluster_max_rat)
+                cl_median_list.append(Cluster_median_rat)
+                cl_std_list.append(Cluster_stf_rat)
+                cone_angle_list.append(omni_ave_c_a)
+                ma_list.append(omni_ave_m_a)
+                times.append(m)
+                
+        if cl_min_list:
+            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list,'B median': cl_median_list, 'B standard deviation':cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list})
+            B_val_df = B_val_df.set_index('datetime')
+            new_cl_df = j.join([B_val_df])
+            list_expanded_dfs_4.append(new_cl_df)
+
+        
+    #for df in Cluster_GIPM_locs_list
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'
+
+    for df in list_expanded_dfs_4:
+        if df.size > 0:
+            firstwin = df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'C4.csv'
+            df.to_csv(fpath)
+            
+    #for df in omni_ave list:
+
+    for om_df in om_ave_list_4:
+        if om_df.size > 0:
+            firstwin = om_df.index[0]
+            firstwin = str(firstwin)
+            fpath = CSV_path + firstwin + 'OMNI_C4.csv'
+            om_df.to_csv(fpath)
+        
+    #########################
+    
+year_n = '2023'
+list_of_cdfs = cdf_list_path + year_n + '.csv'
+cdfconv_gipm(list_of_cdfs, year_n)
+
+
