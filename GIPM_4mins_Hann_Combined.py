@@ -16,6 +16,7 @@ from new_xyz import new_xyz
 from cone_angle_dfs import cone_angle_dfs
 from math import pi
 import statistics
+from FFT_Hann import FFT_Hann
 
 cdf_list_path = '/data/scratch/apx059/23_Years_Data/CDFs/CDFs_'
 
@@ -53,7 +54,7 @@ def cdfconv_gipm(path, year):
                 df_list_c3.append(df_c3) 
         if 'C4' in i:   
             fpath = year_path + i
-            df_c4 = Cluster_cdf_conv(fpath)
+            df_c4 = Cluster_cdf_conv(fpath, 'C4')
             a = df_c4.empty
             if not a:
                 df_list_c4.append(df_c4)
@@ -66,7 +67,7 @@ def cdfconv_gipm(path, year):
     #omni_files = omni_files.rename(columns={0:'fnames'})
     #list_omni_csvs = omni_files['fnames'].to_list()
     omni_path_1 = '/data/scratch/apx059/OMNI_Raw/' + 'omni_hros_1min_20220201000000_20230201000000.csv'
-    omni_path_2 = '/data/scratch/apx059/OMNI_Raw/' + 'omni_hros_1min_20230201000000_20240201000000.csv'
+    omni_path_2 = '/data/scratch/apx059/OMNI_Raw/' + 'omni_hros_1min_20210201000000_20220201000000.csv'
     om_1 = pd.read_csv(omni_path_1)
     om_2 = pd.read_csv(omni_path_2)
     om = pd.concat([om_1, om_2])
@@ -130,6 +131,8 @@ def cdfconv_gipm(path, year):
         cl_std_list = []
         cone_angle_list = []
         ma_list = []
+        para_i_p_list = []
+        perp_i_p_list = []
         times = []
 
         for m in j.index:
@@ -153,17 +156,27 @@ def cdfconv_gipm(path, year):
                 Cluster_max_rat = Cluster_max/omni_ave_B
                 Cluster_median_rat = Cluster_median/omni_ave_B
                 
+                #4 minute power spectrum
+                para_int_p, perp_int_p, freq, power_s_para, power_s_perp_1, power_s_perp_2 = FFT_Hann(mask)
+                #save freq and power_s as their own df, named after 1- window start and 2- sc
+                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':power_s_para, 'Perp 1 Power': power_s_perp_1, 'Perp 2 Power':power_s_perp_2})
+                spec_fname = str(m)+'C1'
+                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/'+spec_fname
+                spectral_df.to_csv(fpath_spec)
+                
                 cl_min_list.append(Cluster_min_rat)
                 cl_mean_list.append(Cluster_mean_rat)
                 cl_max_list.append(Cluster_max_rat)
                 cl_median_list.append(Cluster_median_rat)
                 cl_std_list.append(Cluster_stf_rat)
                 cone_angle_list.append(omni_ave_c_a)
+                para_i_p_list.append(para_int_p)
+                perp_i_p_list.append(perp_int_p)
                 ma_list.append(omni_ave_m_a)
                 times.append(m)
 
         if cl_min_list:
-            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list, 'B median': cl_median_list, 'B standard deviation':cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list})
+            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list, 'B median': cl_median_list, 'B standard deviation':cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list, 'ULF Parallel Power':para_i_p_list, 'ULF Perpendicular Power': perp_i_p_list})
             B_val_df = B_val_df.set_index('datetime')
             new_cl_df = j.join([B_val_df])
             list_expanded_dfs_1.append(new_cl_df)
@@ -190,7 +203,7 @@ def cdfconv_gipm(path, year):
             
     #####C2
     
-        #determine full windows lists
+    #determine full windows lists
     f_winds_all_2 = []
 
     for df in df_list_c2:
@@ -243,6 +256,8 @@ def cdfconv_gipm(path, year):
         cl_median_list = []
         cl_std_list = []
         cone_angle_list = []
+        para_i_p_list = []
+        perp_i_p_list = []
         ma_list = []
         times = []
 
@@ -267,17 +282,27 @@ def cdfconv_gipm(path, year):
                 Cluster_max_rat = Cluster_max/omni_ave_B
                 Cluster_median_rat = Cluster_median/omni_ave_B
                 
+                #4 minute power spectrum
+                para_int_p, perp_int_p, freq, power_s_para, power_s_perp_1, power_s_perp_2 = FFT_Hann(mask)
+                #save freq and power_s as their own df, named after 1- window start and 2- sc
+                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':p_para, 'Perp 1 Power': p_perp_1, 'Perp 2 Power':p_perp_2})
+                spec_fname = str(m)+'C2'
+                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/'+spec_fname
+                spectral_df.to_csv(fpath_spec)
+                
                 cl_min_list.append(Cluster_min_rat)
                 cl_mean_list.append(Cluster_mean_rat)
                 cl_max_list.append(Cluster_max_rat)
                 cl_median_list.append(Cluster_median_rat)
                 cl_std_list.append(Cluster_stf_rat)
                 cone_angle_list.append(omni_ave_c_a)
+                para_i_p_list.append(para_int_p)
+                perp_i_p_list.append(perp_int_p)
                 ma_list.append(omni_ave_m_a)
                 times.append(m)
 
         if cl_min_list:
-            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list,'B median': cl_median_list,'B standard deviation':cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list})
+            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list,'B median': cl_median_list,'B standard deviation':cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list, 'ULF Parallel Power':para_i_p_list, 'ULF Perpendicular Power': perp_i_p_list})
             B_val_df = B_val_df.set_index('datetime')
             new_cl_df = j.join([B_val_df])
             list_expanded_dfs_2.append(new_cl_df)
@@ -357,6 +382,8 @@ def cdfconv_gipm(path, year):
         cl_median_list = []
         cl_std_list = []
         cone_angle_list = []
+        para_i_p_list = []
+        perp_i_p_list = []
         ma_list = []
         times = []
 
@@ -381,17 +408,28 @@ def cdfconv_gipm(path, year):
                 Cluster_max_rat = Cluster_max/omni_ave_B
                 Cluster_median_rat = Cluster_median/omni_ave_B
                 
+                #4 minute power spectrum
+                para_int_p, perp_int_p, freq, power_s_para, power_s_perp_1, power_s_perp_2 = FFT_Hann(mask)
+                #save freq and power_s as their own df, named after 1- window start and 2- sc
+                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':p_para, 'Perp 1 Power': p_perp_1, 'Perp 2 Power':p_perp_2})
+                spec_fname = str(m)+'C3'
+                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/'+spec_fname
+                spectral_df.to_csv(fpath_spec)
+                
+                
                 cl_min_list.append(Cluster_min_rat)
                 cl_mean_list.append(Cluster_mean_rat)
                 cl_max_list.append(Cluster_max_rat)
                 cl_median_list.append(Cluster_median_rat)
                 cl_std_list.append(Cluster_stf_rat)
                 cone_angle_list.append(omni_ave_c_a)
+                para_i_p_list.append(para_int_p)
+                perp_i_p_list.append(perp_int_p)
                 ma_list.append(omni_ave_m_a)
                 times.append(m)
 
         if cl_min_list:
-            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list,'B median': cl_median_list, 'B standard deviation': cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list})
+            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list,'B median': cl_median_list, 'B standard deviation': cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list, 'ULF Parallel Power':para_i_p_list, 'ULF Perpendicular Power': perp_i_p_list})
             B_val_df = B_val_df.set_index('datetime')
             new_cl_df = j.join([B_val_df])
             list_expanded_dfs_3.append(new_cl_df)
@@ -467,6 +505,8 @@ def cdfconv_gipm(path, year):
         cl_median_list = []
         cl_std_list = []
         cone_angle_list = []
+        para_i_p_list = []
+        perp_i_p_list = []
         ma_list = []
         times = []
 
@@ -491,17 +531,27 @@ def cdfconv_gipm(path, year):
                 Cluster_max_rat = Cluster_max/omni_ave_B
                 Cluster_median_rat = Cluster_median/omni_ave_B
                 
+                #4 minute power spectrum
+                para_int_p, perp_int_p, freq, power_s_para, power_s_perp_1, power_s_perp_2 = FFT_Hann(mask)
+                #save freq and power_s as their own df, named after 1- window start and 2- sc
+                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':p_para, 'Perp 1 Power': p_perp_1, 'Perp 2 Power':p_perp_2})
+                spec_fname = str(m)+'C4'
+                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/'+spec_fname
+                spectral_df.to_csv(fpath_spec)
+                
                 cl_min_list.append(Cluster_min_rat)
                 cl_mean_list.append(Cluster_mean_rat)
                 cl_max_list.append(Cluster_max_rat)
                 cl_median_list.append(Cluster_median_rat)
                 cl_std_list.append(Cluster_stf_rat)
                 cone_angle_list.append(omni_ave_c_a)
+                para_i_p_list.append(para_int_p)
+                perp_i_p_list.append(perp_int_p)
                 ma_list.append(omni_ave_m_a)
                 times.append(m)
                 
         if cl_min_list:
-            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list,'B median': cl_median_list, 'B standard deviation':cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list})
+            B_val_df = pd.DataFrame({'datetime': times,'B min': cl_min_list, 'B mean': cl_mean_list, 'B max': cl_max_list,'B median': cl_median_list, 'B standard deviation':cl_std_list, 'cone angle': cone_angle_list, 'M_A': ma_list, 'ULF Parallel Power':para_i_p_list, 'ULF Perpendicular Power': perp_i_p_list})
             B_val_df = B_val_df.set_index('datetime')
             new_cl_df = j.join([B_val_df])
             list_expanded_dfs_4.append(new_cl_df)
@@ -525,10 +575,10 @@ def cdfconv_gipm(path, year):
             firstwin = str(firstwin)
             fpath = CSV_path + firstwin + 'OMNI_C4.csv'
             om_df.to_csv(fpath)
-        
+    
     #########################
     
-year_n = '2023'
+year_n = '2022'
 list_of_cdfs = cdf_list_path + year_n + '.csv'
 cdfconv_gipm(list_of_cdfs, year_n)
 
