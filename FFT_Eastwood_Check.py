@@ -40,6 +40,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     
     # sampling rate
     sr = 22
+    sample_rate = 1/22
     
     #######TWENTY MINUTES
     
@@ -116,7 +117,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT 2 mins norm 1
     x_20mins_perp_1 = ULF_df_20mins['B Perp 1'].to_numpy()
 
-    X_20mins_perp_1 = rfft(x_20mins_perp_1,norm='forward')
+    X_20mins_perp_1 = rfft(x_20mins_perp_1,norm='ortho')
     N_20mins_perp_1 = len(X_20mins_perp_1)
     n_20mins_perp_1 = np.arange(N_20mins_perp_1)
     T_20mins_perp_1 = N_20mins_perp_1/sr
@@ -126,7 +127,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT 2 mins norm 2
     x_20mins_perp_2 = ULF_df_20mins['B Perp 2'].to_numpy()
 
-    X_20mins_perp_2 = rfft(x_20mins_perp_2,norm='forward')
+    X_20mins_perp_2 = rfft(x_20mins_perp_2,norm='ortho')
     N_20mins_perp_2 = len(X_20mins_perp_2)
     n_20mins_perp_2 = np.arange(N_20mins_perp_2)
     T_20mins_perp_2 = N_20mins_perp_2/sr
@@ -143,7 +144,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT parallel
     x_20mins_para = ULF_df_20mins['B Para'].to_numpy()
 
-    X_20mins_para = rfft(x_20mins_para,norm='forward')
+    X_20mins_para = rfft(x_20mins_para,norm='ortho')
     N_20mins_para = len(X_20mins_para)
     n_20mins_para = np.arange(N_20mins_para)
     T_20mins_para = N_20mins_para/sr
@@ -249,7 +250,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT 2 mins norm 1
     x_10mins_perp_1 = ULF_df_10mins['B Perp 1'].to_numpy()
 
-    X_10mins_perp_1 = rfft(x_10mins_perp_1,norm='forward')
+    X_10mins_perp_1 = rfft(x_10mins_perp_1,norm='ortho')
     N_10mins_perp_1 = len(X_10mins_perp_1)
     n_10mins_perp_1 = np.arange(N_10mins_perp_1)
     T_10mins_perp_1 = N_10mins_perp_1/sr
@@ -259,7 +260,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT 2 mins norm 2
     x_10mins_perp_2 = ULF_df_10mins['B Perp 2'].to_numpy()
 
-    X_10mins_perp_2 = rfft(x_10mins_perp_2,norm='forward')
+    X_10mins_perp_2 = rfft(x_10mins_perp_2,norm='ortho')
     N_10mins_perp_2 = len(X_10mins_perp_2)
     n_10mins_perp_2 = np.arange(N_10mins_perp_2)
     T_10mins_perp_2 = N_10mins_perp_2/sr
@@ -276,7 +277,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT parallel
     x_10mins_para = ULF_df_10mins['B Para'].to_numpy()
 
-    X_10mins_para = rfft(x_10mins_para,norm='forward')
+    X_10mins_para = rfft(x_10mins_para,norm='ortho')
     N_10mins_para = len(X_10mins_para)
     n_10mins_para = np.arange(N_10mins_para)
     T_10mins_para = N_10mins_para/sr
@@ -379,7 +380,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT 2 mins norm 1
     x_4mins_perp_1 = ULF_df_4mins['B Perp 1'].to_numpy()
 
-    X_4mins_perp_1 = rfft(x_4mins_perp_1,norm='forward')
+    X_4mins_perp_1 = rfft(x_4mins_perp_1,norm='ortho')
     N_4mins_perp_1 = len(X_4mins_perp_1)
     n_4mins_perp_1 = np.arange(N_4mins_perp_1)
     T_4mins_perp_1 = N_4mins_perp_1/sr
@@ -389,7 +390,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT 2 mins norm 2
     x_4mins_perp_2 = ULF_df_4mins['B Perp 2'].to_numpy()
 
-    X_4mins_perp_2 = rfft(x_4mins_perp_2,norm='forward')
+    X_4mins_perp_2 = rfft(x_4mins_perp_2,norm='ortho')
     N_4mins_perp_2 = len(X_4mins_perp_2)
     n_4mins_perp_2 = np.arange(N_4mins_perp_2)
     T_4mins_perp_2 = N_4mins_perp_2/sr
@@ -406,7 +407,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT parallel
     x_4mins_para = ULF_df_4mins['B Para'].to_numpy()
 
-    X_4mins_para = rfft(x_4mins_para,norm='forward')
+    X_4mins_para = rfft(x_4mins_para,norm='ortho')
     N_4mins_para = len(X_4mins_para)
     n_4mins_para = np.arange(N_4mins_para)
     T_4mins_para = N_4mins_para/sr
@@ -509,7 +510,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT 2 mins norm 1
     x_2mins_perp_1 = ULF_df_2mins['B Perp 1'].to_numpy()
 
-    X_2mins_perp_1 = rfft(x_2mins_perp_1,norm='forward')
+    X_2mins_perp_1 = rfft(x_2mins_perp_1,norm='ortho')
     N_2mins_perp_1 = len(X_2mins_perp_1)
     n_2mins_perp_1 = np.arange(N_2mins_perp_1)
     T_2mins_perp_1 = N_2mins_perp_1/sr
@@ -519,7 +520,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT 2 mins norm 2
     x_2mins_perp_2 = ULF_df_2mins['B Perp 2'].to_numpy()
 
-    X_2mins_perp_2 = rfft(x_2mins_perp_2,norm='forward')
+    X_2mins_perp_2 = rfft(x_2mins_perp_2,norm='ortho')
     N_2mins_perp_2 = len(X_2mins_perp_2)
     n_2mins_perp_2 = np.arange(N_2mins_perp_2)
     T_2mins_perp_2 = N_2mins_perp_2/sr
@@ -536,7 +537,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     #FFT parallel
     x_2mins_para = ULF_df_2mins['B Para'].to_numpy()
 
-    X_2mins_para = rfft(x_2mins_para,norm='forward')
+    X_2mins_para = rfft(x_2mins_para,norm='ortho')
     N_2mins_para = len(X_2mins_para)
     n_2mins_para = np.arange(N_2mins_para)
     T_2mins_para = N_2mins_para/sr
@@ -587,13 +588,13 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     ax1.set_ylabel('Power')
     ax1.set_xlabel('Frequency, Hz')
     ax1.set_xlim(0.001, 5)
-    ax1.set_ylim(0.0000001, 10)
+    ax1.set_ylim(0.0000001, 1000)
     ax1.yaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
-    ax1.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 100, linestyles='dotted', color='k', label='Lower Bound')
+    ax1.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 1000, linestyles='dotted', color='k', label='Lower Bound')
     #ax1.vlines(x=dl_freq, ymin = 0.1, ymax = 100_000_000, linestyles='dashed', label='De Lauretis Freq')
     #ax1.vlines(x=tak_freq, ymin = 0.1, ymax = 100_000_000, linestyles='dotted', label='Takahashi Freq')
     #ax1.vlines(x=lowfreq_lim, ymin = 0.1, ymax = 100_000_000, linestyles='dotted', color='k', label='2 min window freq')
-    ax1.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 100, linestyles='dotted', color='k', label='Upper Bound')
+    ax1.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 1000, linestyles='dotted', color='k', label='Upper Bound')
     ax1.legend(loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0)
     ax1.set_axisbelow(True)
     ax1.yaxis.grid(color='lightgray')
@@ -610,13 +611,13 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     ax2.set_xlabel('Frequency, Hz')
     ax2.set_xlim(0.001, 5)
     #ax2.set_ylim(0.001, 100_000)
-    ax2.set_ylim(0.0000001, 10)
+    ax2.set_ylim(0.0000001, 1000)
     ax2.yaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
-    ax2.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 100, linestyles='dotted', color='k', label='Lower Bound')
+    ax2.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 1000, linestyles='dotted', color='k', label='Lower Bound')
     #ax2.vlines(x=dl_freq, ymin = 0.1, ymax = 100_000_000, linestyles='dashed', label='De Lauretis Freq')
     #ax2.vlines(x=tak_freq, ymin = 0.1, ymax = 100_000_000, linestyles='dotted', label='Takahashi Freq')
     #ax2.vlines(x=lowfreq_lim, ymin = 0.1, ymax = 100_000_000, linestyles='dotted', color='k', label='2 min window freq')
-    ax2.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 100, linestyles='dotted', color='k', label='Upper Bound')
+    ax2.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 1000, linestyles='dotted', color='k', label='Upper Bound')
     #ax2.legend(loc='lower center')
     ax2.set_axisbelow(True)
     ax2.yaxis.grid(color='lightgray')
@@ -633,14 +634,14 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     ax3.set_ylabel('Power')
     ax3.set_xlabel('Frequency, Hz')
     ax3.set_xlim(0.001, 5)
-    ax3.set_ylim(0.0000001, 10)
+    ax3.set_ylim(0.0000001, 1000)
     #ax3.set_ylim(0.001, 100_000)
     ax3.yaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
-    ax3.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 100, linestyles='dotted', color='k', label='Lower Bound')
+    ax3.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 1000, linestyles='dotted', color='k', label='Lower Bound')
     #ax3.vlines(x=dl_freq, ymin = 0.1, ymax = 100_000_000, linestyles='dashed', label='De Lauretis Freq')
     #ax3.vlines(x=tak_freq, ymin = 0.1, ymax = 100_000_000, linestyles='dotted', label='Takahashi Freq')
     #ax3.vlines(x=lowfreq_lim, ymin = 0.1, ymax = 100_000_000, linestyles='dotted', color='k', label='2 min window freq')
-    ax3.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 100, linestyles='dotted', color='k', label='Upper Bound')
+    ax3.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 1000, linestyles='dotted', color='k', label='Upper Bound')
     #ax3.legend(loc='lower center')
     ax3.set_axisbelow(True)
     ax3.yaxis.grid(color='lightgray')
@@ -656,12 +657,12 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     ax4.set_yscale('log')
     ax4.set_xlabel('Frequency, Hz')
     ax4.set_xlim(0.001, 5)
-    ax4.set_ylim(0.0000001, 10)
+    ax4.set_ylim(0.0000001, 1000)
     #ax4.set_ylim(0.001, 100_000)
     ax4.yaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
-    ax4.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 100, linestyles='dotted', color='k', label='Lower Bound')
+    ax4.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 1000, linestyles='dotted', color='k', label='Lower Bound')
     #ax4.vlines(x=tak_freq, ymin = 0.1, ymax = 100_000_000, linestyles='dotted', label='Takahashi Freq')
-    ax4.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 100, linestyles='dotted', color='k', label='Upper Bound')
+    ax4.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 1000, linestyles='dotted', color='k', label='Upper Bound')
     #ax4.legend(loc='lower center')
     ax4.set_axisbelow(True)
     ax4.yaxis.grid(color='lightgray')
