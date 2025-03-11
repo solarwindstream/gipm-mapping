@@ -42,10 +42,10 @@ def Cluster_cdf_conv(filename_a, sc_string):
             df_a['Z_gse'] = df_a['Z_gse']/6371
             df_a['R_GSE'] = df_a['R_GSE']/6371
 
-            else:
-                print(filename_a, 'data error')
-                #return empty df
-                df_a = pd.DataFrame({'A' : []})
+        else:
+            print(filename_a, 'data error')
+            #return empty df
+            df_a = pd.DataFrame({'A' : []})
                 
     if sc_string=='C2':
         
