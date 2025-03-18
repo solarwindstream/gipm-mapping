@@ -3,6 +3,8 @@ import cdflib
 import pandas as pd
 import numpy as np
 
+pd.options.mode.chained_assignment = None
+
 def Cluster_cdf_conv(filename_a, sc_string):
     
     if sc_string=='C1':
