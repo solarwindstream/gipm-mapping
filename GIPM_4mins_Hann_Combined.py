@@ -18,7 +18,10 @@ from math import pi
 import statistics
 from FFT_Hann import FFT_Hann
 
+pd.options.mode.chained_assignment = None
+
 cdf_list_path = '/data/scratch/apx059/23_Years_Data/CDFs/CDFs_'
+year_n = '2022'
 
 def cdfconv_gipm(path, year):
     
@@ -160,8 +163,8 @@ def cdfconv_gipm(path, year):
                 para_int_p, perp_int_p, freq, power_s_para, power_s_perp_1, power_s_perp_2 = FFT_Hann(mask)
                 #save freq and power_s as their own df, named after 1- window start and 2- sc
                 spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':power_s_para, 'Perp 1 Power': power_s_perp_1, 'Perp 2 Power':power_s_perp_2})
-                spec_fname = str(m)+'C1'
-                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/'+spec_fname
+                spec_fname = str(m)+'FS_C1.csv'
+                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/Fourier_Spectra_'+year_n+'/'+spec_fname
                 spectral_df.to_csv(fpath_spec)
                 
                 cl_min_list.append(Cluster_min_rat)
@@ -183,7 +186,8 @@ def cdfconv_gipm(path, year):
 
         
     #for df in Cluster_GIPM_locs_list
-    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'+year_n+'_Integrated_CSVs/'
+    OMNI_CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'+year_n+'_OMNI_CSVs/'
 
     for df in list_expanded_dfs_1:
         if df.size > 0:
@@ -198,7 +202,7 @@ def cdfconv_gipm(path, year):
         if om_df.size > 0:
             firstwin = om_df.index[0]
             firstwin = str(firstwin)
-            fpath = CSV_path + firstwin + 'OMNI_C1.csv'
+            fpath = OMNI_CSV_path + firstwin + 'OMNI_C1.csv'
             om_df.to_csv(fpath)
             
     #####C2
@@ -285,9 +289,9 @@ def cdfconv_gipm(path, year):
                 #4 minute power spectrum
                 para_int_p, perp_int_p, freq, power_s_para, power_s_perp_1, power_s_perp_2 = FFT_Hann(mask)
                 #save freq and power_s as their own df, named after 1- window start and 2- sc
-                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':p_para, 'Perp 1 Power': p_perp_1, 'Perp 2 Power':p_perp_2})
-                spec_fname = str(m)+'C2'
-                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/'+spec_fname
+                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':power_s_para, 'Perp 1 Power': power_s_perp_1, 'Perp 2 Power':power_s_perp_2})
+                spec_fname = str(m)+'FS_C2.csv'
+                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/Fourier_Spectra_'+year_n+'/'+spec_fname
                 spectral_df.to_csv(fpath_spec)
                 
                 cl_min_list.append(Cluster_min_rat)
@@ -309,7 +313,6 @@ def cdfconv_gipm(path, year):
 
         
     #for df in Cluster_GIPM_locs_list
-    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'
 
     for df in list_expanded_dfs_2:
         if df.size > 0:
@@ -324,7 +327,7 @@ def cdfconv_gipm(path, year):
         if om_df.size > 0:
             firstwin = om_df.index[0]
             firstwin = str(firstwin)
-            fpath = CSV_path + firstwin + 'OMNI_C2.csv'
+            fpath = OMNI_CSV_path + firstwin + 'OMNI_C2.csv'
             om_df.to_csv(fpath)
     
     #####C3
@@ -411,9 +414,9 @@ def cdfconv_gipm(path, year):
                 #4 minute power spectrum
                 para_int_p, perp_int_p, freq, power_s_para, power_s_perp_1, power_s_perp_2 = FFT_Hann(mask)
                 #save freq and power_s as their own df, named after 1- window start and 2- sc
-                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':p_para, 'Perp 1 Power': p_perp_1, 'Perp 2 Power':p_perp_2})
-                spec_fname = str(m)+'C3'
-                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/'+spec_fname
+                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':power_s_para, 'Perp 1 Power': power_s_perp_1, 'Perp 2 Power':power_s_perp_2})
+                spec_fname = str(m)+'FS_C3.csv'
+                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/Fourier_Spectra_'+year_n+'/'+spec_fname
                 spectral_df.to_csv(fpath_spec)
                 
                 
@@ -433,6 +436,7 @@ def cdfconv_gipm(path, year):
             B_val_df = B_val_df.set_index('datetime')
             new_cl_df = j.join([B_val_df])
             list_expanded_dfs_3.append(new_cl_df)
+        
 
     for df in list_expanded_dfs_3:
         if df.size > 0:
@@ -445,7 +449,7 @@ def cdfconv_gipm(path, year):
         if om_df.size > 0:
             firstwin = om_df.index[0]
             firstwin = str(firstwin)
-            fpath = CSV_path + firstwin + 'OMNI_C3.csv'
+            fpath = OMNI_CSV_path + firstwin + 'OMNI_C3.csv'
             om_df.to_csv(fpath)
             
     ######C4
@@ -534,9 +538,9 @@ def cdfconv_gipm(path, year):
                 #4 minute power spectrum
                 para_int_p, perp_int_p, freq, power_s_para, power_s_perp_1, power_s_perp_2 = FFT_Hann(mask)
                 #save freq and power_s as their own df, named after 1- window start and 2- sc
-                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':p_para, 'Perp 1 Power': p_perp_1, 'Perp 2 Power':p_perp_2})
-                spec_fname = str(m)+'C4'
-                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/'+spec_fname
+                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':power_s_para, 'Perp 1 Power': power_s_perp_1, 'Perp 2 Power':power_s_perp_2})
+                spec_fname = str(m)+'_FS_C4.csv'
+                fpath_spec = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/Fourier_Products/Fourier_Spectra_'+year_n+'/'+spec_fname
                 spectral_df.to_csv(fpath_spec)
                 
                 cl_min_list.append(Cluster_min_rat)
@@ -558,7 +562,8 @@ def cdfconv_gipm(path, year):
 
         
     #for df in Cluster_GIPM_locs_list
-    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'
+    CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'+year_n+'_Integrated_CSVs/'
+    OMNI_CSV_path = '/data/scratch/apx059/23_Years_Data/CSVs/GIPM_4mins/'+year_n+'_OMNI_CSVs/'
 
     for df in list_expanded_dfs_4:
         if df.size > 0:
@@ -573,12 +578,11 @@ def cdfconv_gipm(path, year):
         if om_df.size > 0:
             firstwin = om_df.index[0]
             firstwin = str(firstwin)
-            fpath = CSV_path + firstwin + 'OMNI_C4.csv'
+            fpath = OMNI_CSV_path + firstwin + 'OMNI_C4.csv'
             om_df.to_csv(fpath)
     
     #########################
-    
-year_n = '2022'
+
 list_of_cdfs = cdf_list_path + year_n + '.csv'
 cdfconv_gipm(list_of_cdfs, year_n)
 
