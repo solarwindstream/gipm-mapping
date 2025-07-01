@@ -18,7 +18,7 @@ def tarf_extract(tarfilelist):
 
 list_all = []
 
-path = "/data/scratch/apx059/23_Years_Data/C1/**"
+path = "/data/scratch/apx059/23_Years_Data/cluster_tarfs/**"
 
 for path in glob.glob(path, recursive=True):
     list_all.append(path)

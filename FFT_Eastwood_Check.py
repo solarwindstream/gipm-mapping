@@ -111,6 +111,10 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
 
     ULF_df_20mins['B Perp 2'] = list_norm_2_vals
     ULF_df_20mins['B Para'] = list_para_vals
+    
+    para_mean_20 = ULF_df_20mins['B Para'].mean()
+    ULF_df_20mins['B Para'] = ULF_df_20mins['B Para'] - para_mean_20
+
 
     #now calculate power spectrum for each perp component & sum.
 
@@ -244,6 +248,10 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
 
     ULF_df_10mins['B Perp 2'] = list_norm_2_vals
     ULF_df_10mins['B Para'] = list_para_vals
+    
+    para_mean_10 = ULF_df_10mins['B Para'].mean()
+    ULF_df_10mins['B Para'] = ULF_df_10mins['B Para'] - para_mean_10
+
 
     #now calculate power spectrum for each perp component & sum.
 
@@ -374,6 +382,10 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
 
     ULF_df_4mins['B Perp 2'] = list_norm_2_vals
     ULF_df_4mins['B Para'] = list_para_vals
+    
+    para_mean_4 = ULF_df_4mins['B Para'].mean()
+    ULF_df_4mins['B Para'] = ULF_df_4mins['B Para'] - para_mean_4
+
 
     #now calculate power spectrum for each perp component & sum.
 
@@ -504,6 +516,9 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
 
     ULF_df_2mins['B Perp 2'] = list_norm_2_vals
     ULF_df_2mins['B Para'] = list_para_vals
+    
+    para_mean_2 = ULF_df_2mins['B Para'].mean()
+    ULF_df_2mins['B Para'] = ULF_df_2mins['B Para'] - para_mean_2
 
     #now calculate power spectrum for each perp component & sum.
 

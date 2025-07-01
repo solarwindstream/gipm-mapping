@@ -39,6 +39,8 @@ def FFT_Hann_20(cluster_ULF_csv, str_centre):
     
     # sampling rate
     sr = 22
+    sample_rate = 1/22
+    ecf = np.sqrt(8/3)
     
     #######TWENTY MINUTES
     

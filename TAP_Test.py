@@ -7,7 +7,7 @@ import numpy as np
 import glob
 
 #define download function for calling data
-batch_no = 1
+#batch_no = 1
 
 def download(url, params, file_name):
     # open in binary mode
@@ -34,7 +34,7 @@ def dl_Cluster_data_single(int_df, sc_no):
 
     if sc_no == '1':
         for i, j in zip(ints_start_list, ints_end_list):
-            filename = '/data/scratch/apx059/23_Years_Data/C1/' + i + '.tgz'
+            filename = '/data/scratch/apx059/23_Years_Data/cluster_tarfs/' + i + '.tgz'
             tarfilelist.append(filename)
             query_specs = {'RETRIEVAL_TYPE': 'product',
                        'DATASET_ID': 'C1_CP_FGM_FULL',
@@ -47,7 +47,7 @@ def dl_Cluster_data_single(int_df, sc_no):
             
     if sc_no == '2':
         for i, j in zip(ints_start_list, ints_end_list):
-            filename = '/data/scratch/apx059/23_Years_Data/C2/' + i + '.tgz'
+            filename = '/data/scratch/apx059/23_Years_Data/cluster_tarfs/' + i + '.tgz'
             tarfilelist.append(filename)
             query_specs = {'RETRIEVAL_TYPE': 'product',
                        'DATASET_ID': 'C2_CP_FGM_FULL',
@@ -59,7 +59,7 @@ def dl_Cluster_data_single(int_df, sc_no):
     
     if sc_no == '3':
         for i, j in zip(ints_start_list, ints_end_list):
-            filename = '/data/scratch/apx059/23_Years_Data/C3/' + i + '.tgz'
+            filename = '/data/scratch/apx059/23_Years_Data/cluster_tarfs/' + i + '.tgz'
             tarfilelist.append(filename)
             query_specs = {'RETRIEVAL_TYPE': 'product',
                        'DATASET_ID': 'C3_CP_FGM_FULL',
@@ -71,7 +71,7 @@ def dl_Cluster_data_single(int_df, sc_no):
 
     if sc_no == '4':
         for i, j in zip(ints_start_list, ints_end_list):
-            filename = '/data/scratch/apx059/23_Years_Data/C4/' + i + '.tgz'
+            filename = '/data/scratch/apx059/23_Years_Data/cluster_tarfs/' + i + '.tgz'
             tarfilelist.append(filename)
             query_specs = {'RETRIEVAL_TYPE': 'product',
                        'DATASET_ID': 'C4_CP_FGM_FULL',
