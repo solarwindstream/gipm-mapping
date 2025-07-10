@@ -1,4 +1,4 @@
-#Fourier Transform B Perp edition
+#Fourier Transform B Perp edition. Make it with both Hann and unwindow
 
 import pandas as pd
 import numpy as np
@@ -46,17 +46,13 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     
     #now, find average Cluster magnetic field direction during this time
 
-    #Bx_gse, By_gse, Bz_gse, B_mag
-
-    #normalised columns for each, then average
-
-    ULF_df_20mins['Norm_Bx'] = ULF_df_20mins['Bx_gse'].div(ULF_df_20mins['B_mag'])
-    ULF_df_20mins['Norm_By'] = ULF_df_20mins['By_gse'].div(ULF_df_20mins['B_mag'])
-    ULF_df_20mins['Norm_Bz'] = ULF_df_20mins['Bz_gse'].div(ULF_df_20mins['B_mag'])
-
-    mean_x = ULF_df_20mins['Norm_Bx'].mean()
-    mean_y = ULF_df_20mins['Norm_By'].mean()
-    mean_z = ULF_df_20mins['Norm_Bz'].mean()
+    #Bx_gse, By_gse, Bz_gse averages
+    
+    mean_x = ULF_df_20mins['Bx_gse'].mean()
+    mean_y = ULF_df_20mins['By_gse'].mean()
+    mean_z = ULF_df_20mins['Bz_gse'].mean()
+    
+    #and normalise
 
     norm = (mean_x**2 + mean_y**2 + mean_z**2)**0.5
 
@@ -76,10 +72,6 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     Norm_2 = Norm_2/(np.linalg.norm(Norm_2))
     #find B in direction of B perp 
     #first make array for each row in table, then get dot products for each 
-    
-    print('B mean 20mins:',   B_mean)
-    print('Norm 1 20mins:',  Norm_1)
-    print('Norm 2 20mins:',  Norm_2)
     
     list_of_B = []
 
@@ -122,24 +114,18 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     x_20mins_perp_1 = ULF_df_20mins['B Perp 1'].to_numpy()
 
     X_20mins_perp_1 = rfft(x_20mins_perp_1,norm='ortho')
-    N_20mins_perp_1 = len(X_20mins_perp_1)
-    n_20mins_perp_1 = np.arange(N_20mins_perp_1)
-    T_20mins_perp_1 = N_20mins_perp_1/sr
-    freq_20mins_perp_1 = n_20mins_perp_1/T_20mins_perp_1
-    power_20mins_perp_1 = (np.abs(X_20mins_perp_1)**2)*sample_rate
+    N_20mins_perp_1 = x_20mins_perp_1.size
+    freq_20mins_perp_1=np.fft.rfftfreq(N_20mins_perp_1,d=sample_rate)
+    power_20mins_perp_1 = 2*(np.abs(X_20mins_perp_1)**2)*sample_rate
 
     #FFT 2 mins norm 2
     x_20mins_perp_2 = ULF_df_20mins['B Perp 2'].to_numpy()
-
     X_20mins_perp_2 = rfft(x_20mins_perp_2,norm='ortho')
-    N_20mins_perp_2 = len(X_20mins_perp_2)
-    n_20mins_perp_2 = np.arange(N_20mins_perp_2)
-    T_20mins_perp_2 = N_20mins_perp_2/sr
-    freq_20mins_perp_2 = n_20mins_perp_2/T_20mins_perp_2
-    power_20mins_perp_2 = (np.abs(X_20mins_perp_2)**2)*sample_rate
+    N_20mins_perp_2 = x_20mins_perp_2.size
+    freq_20mins_perp_2 = np.fft.rfftfreq(N_20mins_perp_2,d=sample_rate)
+    power_20mins_perp_2 = 2*(np.abs(X_20mins_perp_2)**2)*sample_rate
 
-
-    #add up (since power, do not need to sqrt). wait but freqs might not be same. 
+    #add up (since power, do not need to sqrt)
 
     power_20mins_perp = power_20mins_perp_1 + power_20mins_perp_2
 
@@ -149,11 +135,9 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     x_20mins_para = ULF_df_20mins['B Para'].to_numpy()
 
     X_20mins_para = rfft(x_20mins_para,norm='ortho')
-    N_20mins_para = len(X_20mins_para)
-    n_20mins_para = np.arange(N_20mins_para)
-    T_20mins_para = N_20mins_para/sr
-    freq_20mins_para = n_20mins_para/T_20mins_para
-    power_20mins_para = (np.abs(X_20mins_para)**2)*sample_rate
+    N_20mins_para = x_20mins_para.size
+    freq_20mins_para =np.fft.rfftfreq(N_20mins_para,d=sample_rate)
+    power_20mins_para = 2*(np.abs(X_20mins_para)**2)*sample_rate
     
     int_lower_lim = 7*(10**(-3))
     int_upper_lim = 100*(10**(-3))
@@ -176,24 +160,16 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     
     twentyminute_para_int_power = np.trapz(y_20mins_para_toint, x_20mins_toint)
     twentyminute_perp_int_power = np.trapz(y_20mins_perp_toint, x_20mins_toint)
-    print('Power in 7-100mHz Pc3-4 Band, Twenty Minute Interval, Parallel:', twentyminute_para_int_power, 'nT^2')
-    print('Power in 7-100mHz Pc3-4 Band, Twenty Minute Interval, Perpendicular:', twentyminute_perp_int_power, 'nT^2')
     
     #######TEN MINUTES
     
     #now, find average Cluster magnetic field direction during this time
 
-    #Bx_gse, By_gse, Bz_gse, B_mag
+    #Bx_gse, By_gse, Bz_gse
 
-    #normalised columns for each, then average
-
-    ULF_df_10mins['Norm_Bx'] = ULF_df_10mins['Bx_gse'].div(ULF_df_10mins['B_mag'])
-    ULF_df_10mins['Norm_By'] = ULF_df_10mins['By_gse'].div(ULF_df_10mins['B_mag'])
-    ULF_df_10mins['Norm_Bz'] = ULF_df_10mins['Bz_gse'].div(ULF_df_10mins['B_mag'])
-
-    mean_x = ULF_df_10mins['Norm_Bx'].mean()
-    mean_y = ULF_df_10mins['Norm_By'].mean()
-    mean_z = ULF_df_10mins['Norm_Bz'].mean()
+    mean_x = ULF_df_10mins['Bx_gse'].mean()
+    mean_y = ULF_df_10mins['By_gse'].mean()
+    mean_z = ULF_df_10mins['Bz_gse'].mean()
 
     norm = (mean_x**2 + mean_y**2 + mean_z**2)**0.5
 
@@ -213,10 +189,6 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     Norm_2 = Norm_2/(np.linalg.norm(Norm_2))
     #find B in direction of B perp 
     #first make array for each row in table, then get dot products for each 
-    
-    print('B mean 10mins:',   B_mean)
-    print('Norm 1 10mins:',  Norm_1)
-    print('Norm 2 10mins:',  Norm_2)
     
     list_of_B = []
 
@@ -259,21 +231,17 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     x_10mins_perp_1 = ULF_df_10mins['B Perp 1'].to_numpy()
 
     X_10mins_perp_1 = rfft(x_10mins_perp_1,norm='ortho')
-    N_10mins_perp_1 = len(X_10mins_perp_1)
-    n_10mins_perp_1 = np.arange(N_10mins_perp_1)
-    T_10mins_perp_1 = N_10mins_perp_1/sr
-    freq_10mins_perp_1 = n_10mins_perp_1/T_10mins_perp_1
-    power_10mins_perp_1 = (np.abs(X_10mins_perp_1)**2)*sample_rate
+    N_10mins_perp_1 = x_10mins_perp_1.size
+    freq_10mins_perp_1 =np.fft.rfftfreq(N_10mins_perp_1,d=sample_rate)
+    power_10mins_perp_1 = 2*(np.abs(X_10mins_perp_1)**2)*sample_rate
 
     #FFT 2 mins norm 2
     x_10mins_perp_2 = ULF_df_10mins['B Perp 2'].to_numpy()
 
     X_10mins_perp_2 = rfft(x_10mins_perp_2,norm='ortho')
-    N_10mins_perp_2 = len(X_10mins_perp_2)
-    n_10mins_perp_2 = np.arange(N_10mins_perp_2)
-    T_10mins_perp_2 = N_10mins_perp_2/sr
-    freq_10mins_perp_2 = n_10mins_perp_2/T_10mins_perp_2
-    power_10mins_perp_2 = (np.abs(X_10mins_perp_2)**2)*sample_rate
+    N_10mins_perp_2 = x_10mins_perp_2.size
+    freq_10mins_perp_2 =np.fft.rfftfreq(N_10mins_perp_2,d=sample_rate)
+    power_10mins_perp_2 = 2*(np.abs(X_10mins_perp_2)**2)*sample_rate
 
 
     #add up (since power, do not need to sqrt). wait but freqs might not be same. 
@@ -286,11 +254,9 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     x_10mins_para = ULF_df_10mins['B Para'].to_numpy()
 
     X_10mins_para = rfft(x_10mins_para,norm='ortho')
-    N_10mins_para = len(X_10mins_para)
-    n_10mins_para = np.arange(N_10mins_para)
-    T_10mins_para = N_10mins_para/sr
-    freq_10mins_para = n_10mins_para/T_10mins_para
-    power_10mins_para = (np.abs(X_10mins_para)**2)*sample_rate
+    N_10mins_para = x_10mins_para.size
+    freq_10mins_para =np.fft.rfftfreq(N_10mins_para,d=sample_rate)
+    power_10mins_para = 2*(np.abs(X_10mins_para)**2)*sample_rate
     
     #find first number in x array higher than this limit and then last one lower
     #and then use that to find y-range to integrate over!
@@ -310,24 +276,16 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     
     tenminute_para_int_power = np.trapz(y_10mins_para_toint, x_10mins_toint)
     tenminute_perp_int_power = np.trapz(y_10mins_perp_toint, x_10mins_toint)
-    print('Power in 7-100mHz Pc3-4 Band, Ten Minute Interval, Parallel:', tenminute_para_int_power, 'nT^2')
-    print('Power in 7-100mHz Pc3-4 Band, Ten Minute Interval, Perpendicular:', tenminute_perp_int_power, 'nT^2')
     
     #######FOUR MINUTES
     
     #now, find average Cluster magnetic field direction during this time
 
-    #Bx_gse, By_gse, Bz_gse, B_mag
+    #Bx_gse, By_gse, Bz_gse
 
-    #normalised columns for each, then average
-
-    ULF_df_4mins['Norm_Bx'] = ULF_df_4mins['Bx_gse'].div(ULF_df_4mins['B_mag'])
-    ULF_df_4mins['Norm_By'] = ULF_df_4mins['By_gse'].div(ULF_df_4mins['B_mag'])
-    ULF_df_4mins['Norm_Bz'] = ULF_df_4mins['Bz_gse'].div(ULF_df_4mins['B_mag'])
-
-    mean_x = ULF_df_4mins['Norm_Bx'].mean()
-    mean_y = ULF_df_4mins['Norm_By'].mean()
-    mean_z = ULF_df_4mins['Norm_Bz'].mean()
+    mean_x = ULF_df_4mins['Bx_gse'].mean()
+    mean_y = ULF_df_4mins['By_gse'].mean()
+    mean_z = ULF_df_4mins['Bz_gse'].mean()
 
     norm = (mean_x**2 + mean_y**2 + mean_z**2)**0.5
 
@@ -347,11 +305,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     Norm_2 = Norm_2/(np.linalg.norm(Norm_2))
     #find B in direction of B perp 
     #first make array for each row in table, then get dot products for each 
-    
-    print('B mean 4mins:',   B_mean)
-    print('Norm 1 4mins:',  Norm_1)
-    print('Norm 2 4mins:',  Norm_2)
-    
+ 
     list_of_B = []
 
     for i,j,k in zip(ULF_df_4mins['Bx_gse'], ULF_df_4mins['By_gse'], ULF_df_4mins['Bz_gse']):
@@ -393,21 +347,17 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     x_4mins_perp_1 = ULF_df_4mins['B Perp 1'].to_numpy()
 
     X_4mins_perp_1 = rfft(x_4mins_perp_1,norm='ortho')
-    N_4mins_perp_1 = len(X_4mins_perp_1)
-    n_4mins_perp_1 = np.arange(N_4mins_perp_1)
-    T_4mins_perp_1 = N_4mins_perp_1/sr
-    freq_4mins_perp_1 = n_4mins_perp_1/T_4mins_perp_1
-    power_4mins_perp_1 = (np.abs(X_4mins_perp_1)**2)*sample_rate
+    N_4mins_perp_1 = x_4mins_perp_1.size
+    freq_4mins_perp_1 =np.fft.rfftfreq(N_4mins_perp_1,d=sample_rate)
+    power_4mins_perp_1 = 2*(np.abs(X_4mins_perp_1)**2)*sample_rate
 
     #FFT 2 mins norm 2
     x_4mins_perp_2 = ULF_df_4mins['B Perp 2'].to_numpy()
 
     X_4mins_perp_2 = rfft(x_4mins_perp_2,norm='ortho')
-    N_4mins_perp_2 = len(X_4mins_perp_2)
-    n_4mins_perp_2 = np.arange(N_4mins_perp_2)
-    T_4mins_perp_2 = N_4mins_perp_2/sr
-    freq_4mins_perp_2 = n_4mins_perp_2/T_4mins_perp_2
-    power_4mins_perp_2 = (np.abs(X_4mins_perp_2)**2)*sample_rate
+    N_4mins_perp_2 = x_4mins_perp_2.size
+    freq_4mins_perp_2 =np.fft.rfftfreq(N_4mins_perp_2,d=sample_rate)
+    power_4mins_perp_2 = 2*(np.abs(X_4mins_perp_2)**2)*sample_rate
 
 
     #add up (since power, do not need to sqrt). wait but freqs might not be same. 
@@ -420,11 +370,9 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     x_4mins_para = ULF_df_4mins['B Para'].to_numpy()
 
     X_4mins_para = rfft(x_4mins_para,norm='ortho')
-    N_4mins_para = len(X_4mins_para)
-    n_4mins_para = np.arange(N_4mins_para)
-    T_4mins_para = N_4mins_para/sr
-    freq_4mins_para = n_4mins_para/T_4mins_para
-    power_4mins_para = (np.abs(X_4mins_para)**2)*sample_rate
+    N_4mins_para = x_4mins_para.size
+    freq_4mins_para =np.fft.rfftfreq(N_4mins_para,d=sample_rate)
+    power_4mins_para = 2*(np.abs(X_4mins_para)**2)*sample_rate
     
     #find first number in x array higher than this limit and then last one lower
     #and then use that to find y-range to integrate over!
@@ -444,24 +392,16 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     
     fourminute_para_int_power = np.trapz(y_4mins_para_toint, x_4mins_toint)
     fourminute_perp_int_power = np.trapz(y_4mins_perp_toint, x_4mins_toint)
-    print('Power in 7-100mHz Pc3-4 Band, Four Minute Interval, Parallel:', fourminute_para_int_power, 'nT^2')
-    print('Power in 7-100mHz Pc3-4 Band, Four Minute Interval, Perpendicular:', fourminute_perp_int_power, 'nT^2')
     
      #######TWO MINUTES
     
     #now, find average Cluster magnetic field direction during this time
 
-    #Bx_gse, By_gse, Bz_gse, B_mag
+    #Bx_gse, By_gse, Bz_gse
 
-    #normalised columns for each, then average
-
-    ULF_df_2mins['Norm_Bx'] = ULF_df_2mins['Bx_gse'].div(ULF_df_2mins['B_mag'])
-    ULF_df_2mins['Norm_By'] = ULF_df_2mins['By_gse'].div(ULF_df_2mins['B_mag'])
-    ULF_df_2mins['Norm_Bz'] = ULF_df_2mins['Bz_gse'].div(ULF_df_2mins['B_mag'])
-
-    mean_x = ULF_df_2mins['Norm_Bx'].mean()
-    mean_y = ULF_df_2mins['Norm_By'].mean()
-    mean_z = ULF_df_2mins['Norm_Bz'].mean()
+    mean_x = ULF_df_2mins['Bx_gse'].mean()
+    mean_y = ULF_df_2mins['By_gse'].mean()
+    mean_z = ULF_df_2mins['Bz_gse'].mean()
 
     norm = (mean_x**2 + mean_y**2 + mean_z**2)**0.5
 
@@ -481,10 +421,6 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     Norm_2 = Norm_2/(np.linalg.norm(Norm_2))
     #find B in direction of B perp 
     #first make array for each row in table, then get dot products for each 
-    
-    print('B mean 2mins:',   B_mean)
-    print('Norm 1 2mins:',  Norm_1)
-    print('Norm 2 2mins:',  Norm_2)
     
     list_of_B = []
 
@@ -526,42 +462,32 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     x_2mins_perp_1 = ULF_df_2mins['B Perp 1'].to_numpy()
 
     X_2mins_perp_1 = rfft(x_2mins_perp_1,norm='ortho')
-    N_2mins_perp_1 = len(X_2mins_perp_1)
-    n_2mins_perp_1 = np.arange(N_2mins_perp_1)
-    T_2mins_perp_1 = N_2mins_perp_1/sr
-    freq_2mins_perp_1 = n_2mins_perp_1/T_2mins_perp_1
-    power_2mins_perp_1 = (np.abs(X_2mins_perp_1)**2)*sample_rate
+    N_2mins_perp_1 = x_2mins_perp_1.size
+    freq_2mins_perp_1 =np.fft.rfftfreq(N_2mins_perp_1,d=sample_rate)
+    power_2mins_perp_1 = 2*(np.abs(X_2mins_perp_1)**2)*sample_rate
 
     #FFT 2 mins norm 2
     x_2mins_perp_2 = ULF_df_2mins['B Perp 2'].to_numpy()
 
     X_2mins_perp_2 = rfft(x_2mins_perp_2,norm='ortho')
-    N_2mins_perp_2 = len(X_2mins_perp_2)
-    n_2mins_perp_2 = np.arange(N_2mins_perp_2)
-    T_2mins_perp_2 = N_2mins_perp_2/sr
-    freq_2mins_perp_2 = n_2mins_perp_2/T_2mins_perp_2
-    power_2mins_perp_2 = (np.abs(X_2mins_perp_2)**2)*sample_rate
+    N_2mins_perp_2 = x_2mins_perp_2.size
+    freq_2mins_perp_2 =np.fft.rfftfreq(N_2mins_perp_2,d=sample_rate)
+    power_2mins_perp_2 = 2*(np.abs(X_2mins_perp_2)**2)*sample_rate
 
 
-    #add up (since power, do not need to sqrt). wait but freqs might not be same. 
+    #add up (since power, do not need to sqrt). 
 
     power_2mins_perp = power_2mins_perp_1 + power_2mins_perp_2
-
-    #power_tot = power_2_1 + power_2_2
     
     #FFT parallel
     x_2mins_para = ULF_df_2mins['B Para'].to_numpy()
 
     X_2mins_para = rfft(x_2mins_para,norm='ortho')
-    N_2mins_para = len(X_2mins_para)
-    n_2mins_para = np.arange(N_2mins_para)
-    T_2mins_para = N_2mins_para/sr
-    freq_2mins_para = n_2mins_para/T_2mins_para
-    power_2mins_para = (np.abs(X_2mins_para)**2)*sample_rate
-    
-    
-    #lowfreq_lim = 1/120
-    
+    N_2mins_para = x_2mins_para.size
+    freq_2mins_para =np.fft.rfftfreq(N_2mins_para,d=sample_rate)
+    power_2mins_para = 2*(np.abs(X_2mins_para)**2)*sample_rate
+
+
     #add 5/3 line
     #starting at x = 10^-1 Hz and ending at 5.
     #starting y=30 
@@ -587,8 +513,9 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     
     twominute_para_int_power = np.trapz(y_2mins_para_toint, x_2mins_toint)
     twominute_perp_int_power = np.trapz(y_2mins_perp_toint, x_2mins_toint)
-    print('Power in 7-100mHz Pc3-4 Band, Two Minute Interval, Parallel:', twominute_para_int_power, 'nT^2')
-    print('Power in 7-100mHz Pc3-4 Band, Two Minute Interval, Perpendicular:', twominute_perp_int_power, 'nT^2')
+    
+    compressive_power_array = [twominute_para_int_power, fourminute_para_int_power, tenminute_para_int_power, twentyminute_para_int_power]
+    transverse_power_array = [twominute_perp_int_power, fourminute_perp_int_power, tenminute_perp_int_power, twentyminute_perp_int_power]
     
     #show spectra in two perp directions.
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, figsize=(5,16))
@@ -685,4 +612,7 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     
     plt.tight_layout()
     plt.show()
+    
+    
+    return(compressive_power_array, transverse_power_array)
     
