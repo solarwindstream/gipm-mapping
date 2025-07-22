@@ -3,11 +3,8 @@ import datetime as dt
 #import cdflib
 import pandas as pd
 from requests import get # to make GET request
-import numpy as np
-import glob
 
 #define download function for calling data
-#batch_no = 1
 
 def download(url, params, file_name):
     # open in binary mode
@@ -17,9 +14,9 @@ def download(url, params, file_name):
         # write to file
         file.write(response.content)
             
-#input data list and download tarfiles. return list of filenames
+#Take interval list and download corresponding tarfiles. Return list of downloaded tarfile filenames.
 
-def dl_Cluster_data_single(int_df, sc_no):
+def dl_Cluster_data_single(int_df, sc_str, filepath):
 
     #list of interval start and end points
     ints_start_list = int_df['# SC: 1'].tolist()
@@ -32,9 +29,9 @@ def dl_Cluster_data_single(int_df, sc_no):
     #note filenames in list for later use
     tarfilelist = []
 
-    if sc_no == '1':
+    if sc_str == 'C1':
         for i, j in zip(ints_start_list, ints_end_list):
-            filename = '/data/scratch/apx059/23_Years_Data/cluster_tarfs/' + i + '.tgz'
+            filename = filepath + i + 'C1.tgz'
             tarfilelist.append(filename)
             query_specs = {'RETRIEVAL_TYPE': 'product',
                        'DATASET_ID': 'C1_CP_FGM_FULL',
@@ -45,51 +42,43 @@ def dl_Cluster_data_single(int_df, sc_no):
                           }
             download(myurl, query_specs, filename)
             
-    if sc_no == '2':
+    if sc_str == 'C2':
         for i, j in zip(ints_start_list, ints_end_list):
-            filename = '/data/scratch/apx059/23_Years_Data/cluster_tarfs/' + i + '.tgz'
+            filename = filepath + i + 'C2.tgz'
             tarfilelist.append(filename)
             query_specs = {'RETRIEVAL_TYPE': 'product',
                        'DATASET_ID': 'C2_CP_FGM_FULL',
                        'START_DATE': i,
                        'END_DATE': j,
                        'DELIVERY_FORMAT': 'CDF',
-                       'DELIVERY_INTERVAL': 'daily'}
+                       'DELIVERY_INTERVAL': 'daily'
+                          }
             download(myurl, query_specs, filename)
     
-    if sc_no == '3':
+    if sc_str == 'C3':
         for i, j in zip(ints_start_list, ints_end_list):
-            filename = '/data/scratch/apx059/23_Years_Data/cluster_tarfs/' + i + '.tgz'
+            filename = filepath + i + 'C3.tgz'
             tarfilelist.append(filename)
             query_specs = {'RETRIEVAL_TYPE': 'product',
                        'DATASET_ID': 'C3_CP_FGM_FULL',
                        'START_DATE': i,
                        'END_DATE': j,
                        'DELIVERY_FORMAT': 'CDF',
-                       'DELIVERY_INTERVAL': 'daily'}
+                       'DELIVERY_INTERVAL': 'daily'
+                          }
             download(myurl, query_specs, filename)
 
-    if sc_no == '4':
+    if sc_str == 'C4':
         for i, j in zip(ints_start_list, ints_end_list):
-            filename = '/data/scratch/apx059/23_Years_Data/cluster_tarfs/' + i + '.tgz'
+            filename = filepath + i + 'C4.tgz'
             tarfilelist.append(filename)
             query_specs = {'RETRIEVAL_TYPE': 'product',
                        'DATASET_ID': 'C4_CP_FGM_FULL',
                        'START_DATE': i,
                        'END_DATE': j,
                        'DELIVERY_FORMAT': 'CDF',
-                       'DELIVERY_INTERVAL': 'daily'}
+                       'DELIVERY_INTERVAL': 'daily'
+                          }
             download(myurl, query_specs, filename)
 
     return(tarfilelist)
-
-csv_name = '/data/scratch/apx059/Cluster_Intervals-01022002-01022024/dm-intervals-c2-240902-144411.csv'
-
-cluster_2_23yr = pd.read_csv(csv_name)
-
-#drop unnecessary rows (without data in!)
-un_rows = [0,1,2,3,4]
-cluster_2_23yr = cluster_2_23yr.drop(un_rows)
-cluster_2_23yr = cluster_2_23yr.reindex()
-
-tf_list = dl_Cluster_data_single(cluster_2_23yr, '2')
