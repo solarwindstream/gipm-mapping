@@ -15,8 +15,8 @@ def OMNI_cdf_conv(filename):
     datetimes_omni_a = pd.to_datetime(omni_dt_series)
     datetimes_omni_a = datetimes_omni_a.to_frame(name="datetime")
 
-    om_df = pd.DataFrame({'Np': cdf_file['proton_density'], 'Bx_gse': cdf_file['BX_GSE'], 
-                                       'By_gse': cdf_file['BY_GSE'], "Bz_gse": cdf_file['BZ_GSE'], 'B_mag': cdf_file['F'], "Vx_gse": cdf_file['Vx'], "Vy_gse": cdf_file['Vy'],"Vz_gse": cdf_file['Vz'], 'V_gse': cdf_file['flow_speed'], 'M_A': cdf_file['Mach_num']})
+    om_df = pd.DataFrame({'Np': cdf_file['proton_density'], 'Bx_gse': cdf_file['BX_GSE'], 'By_gse': cdf_file['BY_GSE'], "Bz_gse": cdf_file['BZ_GSE'], 'B_mag': cdf_file['F'], "Vx_gse": cdf_file['Vx'], "Vy_gse": cdf_file['Vy'],"Vz_gse": cdf_file['Vz'], 'V_gse': cdf_file['flow_speed'], 'M_A': cdf_file['Mach_num'], 'Sc_x_gse': cdf_file['x'], 'Sc_y_gse': cdf_file['y'], 'Sc_z_gse': cdf_file['z'], 'BS_x_gse': cdf_file['BSN_x'], 'BS_y_gse': cdf_file['BSN_y'], 'BS_z_gse': cdf_file['BSN_z']})
+    
     om_df = om_df.join(datetimes_omni_a)
     om_df = om_df.set_index('datetime')
 
@@ -30,6 +30,13 @@ def OMNI_cdf_conv(filename):
     om_df[om_df['Vz_gse'] == 99999.99] = np.nan
     om_df[om_df['V_gse'] == 99999.99] = np.nan
     om_df[om_df['M_A'] == 999.9] = np.nan
+    om_df[om_df['Sc_x_gse'] == 9999.99] = np.nan
+    om_df[om_df['Sc_y_gse'] == 9999.99] = np.nan
+    om_df[om_df['Sc_z_gse'] == 9999.99] = np.nan
+    om_df[om_df['BS_x_gse'] == 9999.99] = np.nan
+    om_df[om_df['BS_y_gse'] == 9999.99] = np.nan
+    om_df[om_df['BS_z_gse'] == 9999.99] = np.nan
+    
     
     #now cone angle!
     omni_cone_angle = []
