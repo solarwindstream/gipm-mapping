@@ -365,12 +365,7 @@ def FFT_Hann_20(cluster_ULF_csv, str_centre):
     freq_4mins_perp_2 = np.fft.rfftfreq(N_4mins_perp_2, d=sample_rate)
     power_4mins_perp_2 = 2*(np.abs(X_4mins_perp_2)**2)*ecf*sample_rate
 
-
-    #add up (since power, do not need to sqrt). wait but freqs might not be same. 
-
     power_4mins_perp = power_4mins_perp_1 + power_4mins_perp_2
-
-    #power_tot = power_2_1 + power_2_2
     
     #FFT parallel
     x_4mins_para = ULF_df_4mins['B Para'].to_numpy()

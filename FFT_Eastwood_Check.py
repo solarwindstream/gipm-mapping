@@ -375,38 +375,35 @@ def FFT_perp_20(cluster_ULF_csv, str_centre):
     
     #find first number in x array higher than this limit and then last one lower
     #and then use that to find y-range to integrate over!
-    x_4mins_where = np.where((freq_4mins_para > int_lower_lim) & (freq_4mins_para < int_upper_lim))
+    #x_4mins_where = np.where((freq_4mins_para > int_lower_lim) & (freq_4mins_para < int_upper_lim))
     
-    x_4mins_toint = []
-    y_4mins_para_toint = []
-    y_4mins_perp_toint = []
+    #x_4mins_toint = []
+    #y_4mins_para_toint = []
+    #y_4mins_perp_toint = []
     
-    for i in x_4mins_where[0]:
-        x_val = freq_4mins_para[i]
-        y_para_val = power_4mins_para[i]
-        y_perp_val = power_4mins_perp[i]
-        x_4mins_toint.append(x_val)
-        y_4mins_para_toint.append(y_para_val)
-        y_4mins_perp_toint.append(y_perp_val)
+    #for i in x_4mins_where[0]:
+    #    x_val = freq_4mins_para[i]
+    #    y_para_val = power_4mins_para[i]
+    #    y_perp_val = power_4mins_perp[i]
+    #    x_4mins_toint.append(x_val)
+    #    y_4mins_para_toint.append(y_para_val)
+    #    y_4mins_perp_toint.append(y_perp_val)
     
-    fourminute_para_int_power = np.trapz(y_4mins_para_toint, x_4mins_toint)
-    fourminute_perp_int_power = np.trapz(y_4mins_perp_toint, x_4mins_toint)
+    #fourminute_para_int_power = np.trapz(y_4mins_para_toint, x_4mins_toint)
+    #fourminute_perp_int_power = np.trapz(y_4mins_perp_toint, x_4mins_toint)
     
-    
-    #davide's integration too
-    
-    ## Compute the power into the required frequency range
+    ## Compute the power into the required frequency range using midpoint integration
     F_LOW,F_HIGH=7e-3,1e-1
     mask=(freq_4mins_para>F_LOW) & (freq_4mins_para<F_HIGH)
     delta_f=freq_4mins_para[1]-freq_4mins_para[0]
     P_para=np.sum(power_4mins_para[mask])*delta_f
-    print('davide method para:', P_para,'nT^2')
+    print('Compressive Power:', P_para,'nT^2')
     
     F_LOW,F_HIGH=7e-3,1e-1
     mask=(freq_4mins_perp_1>F_LOW) & (freq_4mins_perp_1<F_HIGH)
     delta_f=freq_4mins_perp_1[1]-freq_4mins_perp_1[0]
     P_perp=np.sum(power_4mins_perp[mask])*delta_f
-    print('davide method perp:', P_perp,'nT^2')
+    print('Transverse Power:', P_perp,'nT^2')
     
      #######TWO MINUTES
     
