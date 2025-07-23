@@ -1,3 +1,5 @@
+##needs update!
+
 import pandas as pd
 import numpy as np
 from numpy.fft import rfft
@@ -8,17 +10,9 @@ import datetime as dt
 #requires that the input is already masked to 4 mins!
 
 def FFT_Hann(ULF_df_4mins):
-    
-    #mask to just relevant times
-
-    #time_start_4mins = window_start
-    #time_end_4mins = window_start + dt.timedelta(minutes=4)
-
-    #ULF_df_4mins = cluster_raw_df.loc[((cluster_raw_df.index >= time_start_4mins) & (cluster_raw_df.index < time_end_4mins))]
 
     # sampling rate
-    sr = 22
-    sample_rate = 1/22
+    sample_rate = 1/22.4
     ecf = np.sqrt(8/3)
     
     #pc3-4 pulsation window
@@ -29,17 +23,11 @@ def FFT_Hann(ULF_df_4mins):
 
     #now, find average Cluster magnetic field direction during this time
 
-    #Bx_gse, By_gse, Bz_gse, B_mag
+    #Bx_gse, By_gse, Bz_gse
 
-    #normalised columns for each, then average
-
-    ULF_df_4mins['Norm_Bx'] = ULF_df_4mins['Bx_gse'].div(ULF_df_4mins['B_mag'])
-    ULF_df_4mins['Norm_By'] = ULF_df_4mins['By_gse'].div(ULF_df_4mins['B_mag'])
-    ULF_df_4mins['Norm_Bz'] = ULF_df_4mins['Bz_gse'].div(ULF_df_4mins['B_mag'])
-
-    mean_x = ULF_df_4mins['Norm_Bx'].mean()
-    mean_y = ULF_df_4mins['Norm_By'].mean()
-    mean_z = ULF_df_4mins['Norm_Bz'].mean()
+    mean_x = ULF_df_4mins['Bx_gse'].mean()
+    mean_y = ULF_df_4mins['By_gse'].mean()
+    mean_z = ULF_df_4mins['Bz_gse'].mean()
 
     norm = (mean_x**2 + mean_y**2 + mean_z**2)**0.5
 
@@ -99,58 +87,38 @@ def FFT_Hann(ULF_df_4mins):
     x_4mins_perp_1 = ULF_df_4mins['B Perp 1'].to_numpy()
     four_min_hann = np.hanning(len(x_4mins_perp_1))
     x_4mins_perp_1 = x_4mins_perp_1*four_min_hann
-
     X_4mins_perp_1 = rfft(x_4mins_perp_1,norm='ortho')
-    N_4mins_perp_1 = len(X_4mins_perp_1)
-    n_4mins_perp_1 = np.arange(N_4mins_perp_1)
-    T_4mins_perp_1 = N_4mins_perp_1/sr
-    freq_4mins_perp_1 = n_4mins_perp_1/T_4mins_perp_1
-    power_4mins_perp_1 = (np.abs(X_4mins_perp_1)**2)*ecf*sample_rate
+    N_4mins_perp_1= x_4mins_perp_1.size
+    freq_4mins_perp_1 = np.fft.rfftfreq(N_4mins_perp_1, d=sample_rate)
+    power_4mins_perp_1 = 2*(np.abs(X_4mins_perp_1)**2)*ecf*sample_rate
 
     #FFT 4 mins norm 2
     x_4mins_perp_2 = ULF_df_4mins['B Perp 2'].to_numpy()
     x_4mins_perp_2 = x_4mins_perp_2*four_min_hann
-
     X_4mins_perp_2 = rfft(x_4mins_perp_2,norm='ortho')
-    N_4mins_perp_2 = len(X_4mins_perp_2)
-    n_4mins_perp_2 = np.arange(N_4mins_perp_2)
-    T_4mins_perp_2 = N_4mins_perp_2/sr
-    freq_4mins_perp_2 = n_4mins_perp_2/T_4mins_perp_2
-    power_4mins_perp_2 = (np.abs(X_4mins_perp_2)**2)*ecf*sample_rate
-
-
-    #add up (since power, do not need to sqrt). wait but freqs might not be same. 
+    N_4mins_perp_2 = x_4mins_perp_2.size
+    freq_4mins_perp_2 = np.fft.rfftfreq(N_4mins_perp_2, d=sample_rate)
+    power_4mins_perp_2 = 2*(np.abs(X_4mins_perp_2)**2)*ecf*sample_rate
 
     power_4mins_perp = power_4mins_perp_1 + power_4mins_perp_2
 
     #FFT parallel
     x_4mins_para = ULF_df_4mins['B Para'].to_numpy()
     x_4mins_para = x_4mins_para*four_min_hann
-
     X_4mins_para = rfft(x_4mins_para,norm='ortho')
-    N_4mins_para = len(X_4mins_para)
-    n_4mins_para = np.arange(N_4mins_para)
-    T_4mins_para = N_4mins_para/sr
-    freq_4mins_para = n_4mins_para/T_4mins_para
-    power_4mins_para = (np.abs(X_4mins_para)**2)*ecf*sample_rate
+    N_4mins_para= x_4mins_para.size
+    freq_4mins_para = np.fft.rfftfreq(N_4mins_para, d=sample_rate)
+    power_4mins_para = 2*(np.abs(X_4mins_para)**2)*ecf*sample_rate
 
-    #find first number in x array higher than this limit and then last one lower
-    #and then use that to find y-range to integrate over!
-    x_4mins_where = np.where((freq_4mins_para > int_lower_lim) & (freq_4mins_para < int_upper_lim))
-
-    x_4mins_toint = []
-    y_4mins_para_toint = []
-    y_4mins_perp_toint = []
-
-    for i in x_4mins_where[0]:
-        x_val = freq_4mins_para[i]
-        y_para_val = power_4mins_para[i]
-        y_perp_val = power_4mins_perp[i]
-        x_4mins_toint.append(x_val)
-        y_4mins_para_toint.append(y_para_val)
-        y_4mins_perp_toint.append(y_perp_val)
-
-    fourminute_para_int_power = np.trapezoid(y_4mins_para_toint, x_4mins_toint)
-    fourminute_perp_int_power = np.trapezoid(y_4mins_perp_toint, x_4mins_toint)
+    ## Compute the power into the required frequency range using midpoint integration
+    F_LOW,F_HIGH = 7e-3,1e-1
+    mask = (freq_4mins_para>F_LOW) & (freq_4mins_para<F_HIGH)
+    delta_f = freq_4mins_para[1] - freq_4mins_para[0]
+    P_para = np.sum(power_4mins_para[mask])*delta_f
     
-    return(fourminute_para_int_power, fourminute_perp_int_power, freq_4mins_para, power_4mins_para, power_4mins_perp_1, power_4mins_perp_2)
+    F_LOW,F_HIGH = 7e-3,1e-1
+    mask = (freq_4mins_perp_1>F_LOW) & (freq_4mins_perp_1<F_HIGH)
+    delta_f = freq_4mins_perp_1[1] - freq_4mins_perp_1[0]
+    P_perp = np.sum(power_4mins_perp[mask])*delta_f
+    
+    return(P_para, P_perp, freq_4mins_para, power_4mins_para, power_4mins_perp_1, power_4mins_perp_2)
