@@ -9,27 +9,36 @@ import math
 from Cluster_CDF_conv import Cluster_cdf_conv
 
 from window_det_4min import window_det
-from omni_seg_centered_4mins import omni_seg
-from gipm_transform_coeffs import gipm_transform_coeffs
+from omni_seg_centered import omni_seg
+from gipm_transform_coeffs import gipm_transform_coeffs_mean, gipm_transform_coeffs_median
 from GIPM_loc_conv import gipm_loc_transform
 from new_xyz import new_xyz
 from cone_angle_dfs import cone_angle_dfs
 from math import pi
 import statistics
 from FFT_Hann import FFT_Hann
+import glob
 
 pd.options.mode.chained_assignment = None
 
 cdf_list_path = '/data/scratch/apx059/23_Years_Data/CDFs/CDFs_'
-year_n = '2022'
+year_n = '2003'
 
-def cdfconv_gipm(path, year):
+def cdfconv_gipm(year):
     
-    #now make those cdfs into CSVs!
-    list_files = pd.read_csv(path, header=None)
-    list_files = list_files.rename(columns={0:'fnames'})
-    list_cdfs = list_files['fnames'].to_list()
-    year_path = '/data/scratch/apx059/23_Years_Data/CDFs/CDFs_' + year_n + '/'
+    #rework to use glob
+    
+    #folder with input CDFs
+
+    path = '/data/SPCS-HIETALA-Shocks/GIPM-MAPPING/Cluster_CDFs/CDFs_' + year + '/Full_CDFs/**'
+    
+    list_cdfs = []
+    
+    for path in glob.glob(path, recursive=True):
+        if '.cdf' in path:
+            list_cdfs.append(path)
+            
+    #now put each filepath into conversion, checking spacecraft number.
     
     df_list_c1 = []
     df_list_c2 = []
@@ -38,42 +47,30 @@ def cdfconv_gipm(path, year):
 
     for i in list_cdfs:
         if 'C1' in i:
-            fpath = year_path + i
-            df_c1 = Cluster_cdf_conv(fpath, 'C1')
+            df_c1 = Cluster_cdf_conv(i, 'C1')
             a = df_c1.empty
             if not a:
                 df_list_c1.append(df_c1)
         if 'C2' in i:
-            fpath = year_path + i
-            df_c2 = Cluster_cdf_conv(fpath, 'C2')
+            df_c2 = Cluster_cdf_conv(i, 'C2')
             a = df_c2.empty
             if not a:
                 df_list_c2.append(df_c2)
         if 'C3' in i:   
-            fpath = year_path + i
-            df_c3 = Cluster_cdf_conv(fpath, 'C3')
+            df_c3 = Cluster_cdf_conv(i, 'C3')
             a = df_c3.empty
             if not a:
                 df_list_c3.append(df_c3) 
         if 'C4' in i:   
-            fpath = year_path + i
-            df_c4 = Cluster_cdf_conv(fpath, 'C4')
+            df_c4 = Cluster_cdf_conv(i, 'C4')
             a = df_c4.empty
             if not a:
                 df_list_c4.append(df_c4)
-                
-    #list all OMNI files, but only import relevant ones
+
     #load ONLY this year's omni dfs
     
-    #omni_csv_list_path = r'/data/home/apx059/gipm-mapping/listofomnis.csv'
-    #omni_files = pd.read_csv(omni_csv_list_path, header=None)
-    #omni_files = omni_files.rename(columns={0:'fnames'})
-    #list_omni_csvs = omni_files['fnames'].to_list()
-    omni_path_1 = '/data/scratch/apx059/OMNI_Raw/' + 'omni_hros_1min_20220201000000_20230201000000.csv'
-    omni_path_2 = '/data/scratch/apx059/OMNI_Raw/' + 'omni_hros_1min_20210201000000_20220201000000.csv'
-    om_1 = pd.read_csv(omni_path_1)
-    om_2 = pd.read_csv(omni_path_2)
-    om = pd.concat([om_1, om_2])
+    omni_path = '/data/SPCS-HIETALA-Shocks/GIPM-MAPPING/New_OMNI_Raw_Files/CSVs/Raw_OMNI_' + year + '.csv'
+    om = pd.read_csv(omni_path)
 
     om['datetime'] = pd.to_datetime(om['datetime'])
     om = om.set_index('datetime')
@@ -94,22 +91,40 @@ def cdfconv_gipm(path, year):
         om_ave_list_1.append(om_averages)
 
     #find GIPM rotation matrices and scaling coefficient for every Cluster location
-    GIPM_X_vec_list_1 = []
-    GIPM_Y_vec_list_1 = []
-    GIPM_Z_vec_list_1 = []
-    FAC_coeff_list_1 = []
+    
+    GIPM_X_mean_list_1 = []
+    GIPM_Y_mean_list_1 = []
+    GIPM_Z_mean_list_1 = []
+    FAC_coeff_mean_list_1 = []
+    
+    GIPM_X_median_list_1 = []
+    GIPM_Y_median_list_1 = []
+    GIPM_Z_median_list_1 = []
+    FAC_coeff_median_list_1 = []
 
     for om_df in om_ave_list_1:
-        GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs = gipm_transform_coeffs(om_df)
-        GIPM_X_vec_list_1.append(GIPM_X_Vecs)
-        GIPM_Y_vec_list_1.append(GIPM_Y_Vecs)
-        GIPM_Z_vec_list_1.append(GIPM_Z_Vecs)
-        FAC_coeff_list_1.append(FAC_coeffs)
+        
+        #mean
+        GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs = gipm_transform_coeffs_mean(om_df)
+        GIPM_X_mean_list_1.append(GIPM_X_Vecs)
+        GIPM_Y_mean_list_1.append(GIPM_Y_Vecs)
+        GIPM_Z_mean_list_1.append(GIPM_Z_Vecs)
+        FAC_coeff_mean_list_1.append(FAC_coeffs)
+        
+        #median
+        GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs = gipm_transform_coeffs_median(om_df)
+        GIPM_X_median_list_1.append(GIPM_X_Vecs)
+        GIPM_Y_median_list_1.append(GIPM_Y_Vecs)
+        GIPM_Z_median_list_1.append(GIPM_Z_Vecs)
+        FAC_coeff_median_list_1.append(FAC_coeffs)
 
+    
+    #now combine these basis vectors and co-efficients with Cluster GSE location data to transform into GIPM
     Cluster_GIPM_locs_list_1 = []
-
-    for p,q,i,j,k,m in zip(f_winds_all_1, df_list_c1, GIPM_X_vec_list_1, GIPM_Y_vec_list_1, GIPM_Z_vec_list_1, FAC_coeff_list_1):
-        Cluster_dt_loc = gipm_loc_transform(p,q,i,j,k,m)
+    
+    #mean AND median locations both produced by gipm_loc_transform
+    for p,q,i,j,k,m,n,r,s,t in zip(f_winds_all_1, df_list_c1, GIPM_X_mean_list_1, GIPM_Y_mean_list_1, GIPM_Z_mean_list_1, FAC_coeff_mean_list_1, GIPM_X_median_list_1, GIPM_Y_median_list_1, GIPM_Z_median_list_1, FAC_coeff_median_list_1):
+        Cluster_dt_loc = gipm_loc_transform(p,q,i,j,k,m,n,r,s,t)
         Cluster_GIPM_locs_list_1.append(Cluster_dt_loc)
         
     gipm_df_c1 = []
@@ -119,7 +134,7 @@ def cdfconv_gipm(path, year):
         df_c1 = df_c1.set_index('datetime')
         gipm_df_c1.append(df_c1)
 
-    #this bit is for the new dfs 
+    #now find min, max and mean B, integrated power, and save with relevant OMNI average values.
 
     list_expanded_dfs_1 = []
 
@@ -127,17 +142,9 @@ def cdfconv_gipm(path, year):
 
     for i,j,k in zip(df_list_c1, gipm_df_c1, om_ave_list_1):
 
-        cl_min_list = []
-        cl_max_list = []
-        cl_mean_list = []
-        cl_median_list = []
-        cl_std_list = []
-        cone_angle_list = []
-        ma_list = []
-        para_i_p_list = []
-        perp_i_p_list = []
-        times = []
-
+        #empty lists set up for all variables
+        cl_min_list, cl_max_list, cl_mean_list, cl_median_list, cl_std_list, cone_angle_list, ma_list, max_IMF_dev_list, omni_B_list, para_i_p_list, perp_i_p_list, times = ([] for i in range(12))
+        
         for m in j.index:
             start_time = m
             end_time = m + time_window
@@ -146,6 +153,7 @@ def cdfconv_gipm(path, year):
             omni_ave_B = k.loc[m, 'B_mag']
             omni_ave_c_a = k.loc[m, 'cone angle']
             omni_ave_m_a = k.loc[m, 'M_A']
+            omni_ave_max_IMF_dev = k.loc[m, 'max cone angle deviation']
             
             if Cluster_list:
                 Cluster_min = min(Cluster_list)
@@ -176,6 +184,7 @@ def cdfconv_gipm(path, year):
                 para_i_p_list.append(para_int_p)
                 perp_i_p_list.append(perp_int_p)
                 ma_list.append(omni_ave_m_a)
+                omni_B_list.append(omni_ave_B)
                 times.append(m)
 
         if cl_min_list:
@@ -583,7 +592,6 @@ def cdfconv_gipm(path, year):
     
     #########################
 
-list_of_cdfs = cdf_list_path + year_n + '.csv'
-cdfconv_gipm(list_of_cdfs, year_n)
+cdfconv_gipm(year_n)
 
 
