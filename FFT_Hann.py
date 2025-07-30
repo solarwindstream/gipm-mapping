@@ -1,23 +1,16 @@
-##needs update!
-
 import pandas as pd
 import numpy as np
 from numpy.fft import rfft
 import datetime as dt
 
-##Produces a four-minute power spectra in perp & parallel directions, using the Hann window. Also returns integrated power in the
-##ULF wave band (7-100mHz)
-#requires that the input is already masked to 4 mins!
+##Produces a four-minute power spectra in perp & parallel directions, using the Hann window. Also returns integrated power in the ULF wave band (7-100mHz)
+#Requires that the input is already masked to 4 mins!
 
 def FFT_Hann(ULF_df_4mins):
 
     # sampling rate
     sample_rate = 1/22.4
     ecf = np.sqrt(8/3)
-    
-    #pc3-4 pulsation window
-    int_lower_lim = 7*(10**(-3))
-    int_upper_lim = 100*(10**(-3))
     
     #######FOUR MINUTES
 
@@ -44,6 +37,7 @@ def FFT_Hann(ULF_df_4mins):
     Norm_1 = Norm_1/(np.linalg.norm(Norm_1))
     Norm_2 = np.cross(B_mean, Norm_1)
     Norm_2 = Norm_2/(np.linalg.norm(Norm_2))
+    
     #find B in direction of B perp 
     #first make array for each row in table, then get dot products for each 
 
@@ -115,10 +109,8 @@ def FFT_Hann(ULF_df_4mins):
     mask = (freq_4mins_para>F_LOW) & (freq_4mins_para<F_HIGH)
     delta_f = freq_4mins_para[1] - freq_4mins_para[0]
     P_para = np.sum(power_4mins_para[mask])*delta_f
-    
-    F_LOW,F_HIGH = 7e-3,1e-1
+
     mask = (freq_4mins_perp_1>F_LOW) & (freq_4mins_perp_1<F_HIGH)
-    delta_f = freq_4mins_perp_1[1] - freq_4mins_perp_1[0]
     P_perp = np.sum(power_4mins_perp[mask])*delta_f
     
     return(P_para, P_perp, freq_4mins_para, power_4mins_para, power_4mins_perp_1, power_4mins_perp_2)
