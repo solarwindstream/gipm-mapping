@@ -44,11 +44,6 @@ def GIPM_trans(b_gse, v_gse):
     
     if not z_comp_two_decimals == 0:
         print('error in GIPM transform, z_comp:', z_comp)
-    
-    ##transformation matrix
-    #GIPM_matrix = np.array([X_GIPM[0], Y_GIPM[0], Z_GIPM[0], X_GIPM[1], Y_GIPM[1], Z_GIPM[1], X_GIPM[2], Y_GIPM[2], Z_GIPM[2]]).reshape((3,3))
-    ##...need inverse of this matrix D:
-    #GIPM_matrix_inv = np.linalg.inv(GIPM_matrix)
-    
+
     return(X_GIPM, Y_GIPM, Z_GIPM)
 
