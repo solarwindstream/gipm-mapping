@@ -1,5 +1,5 @@
-#function to break up Cluster data into 2 min time windows
-#excluding any that do not have full resolution (2690/2691 per second)
+#function to break up Cluster data into 4 min time windows
+#excluding any that do not have full resolution (5280)
 
 def window_det(df_z):
     
@@ -33,8 +33,9 @@ def window_det(df_z):
             windows.append(new_window)
         else: 
             break
-    #skip any that do not have data for the whole two minutes
-    #full cadence gives 5280 per window.
+            
+    #skip any that do not have data for the whole four minutes
+    #full cadence gives 5280 per window. 22*4*60
     
     only_full_windows = []
 
@@ -44,7 +45,7 @@ def window_det(df_z):
 
         mask = df_z.loc[(df_z.index >= start_time) & (df_z.index < end_time)]
     
-        if mask.shape[0]>=5280 :
+        if mask.shape[0]>=(22*4*60) :
             only_full_windows.append(start_time)
             
     return(only_full_windows)
