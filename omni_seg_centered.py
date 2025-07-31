@@ -139,11 +139,7 @@ def omni_seg(om_df, only_full_windows):
 
         max_angle_deviation = max(rot_angles)
 
-    om_averages = pd.DataFrame({'datetime': only_full_windows, 'Np (mean)': omni_N_ave, 'B_mag (mean)': omni_B_ave, 'V_gse (mean)': omni_V_ave, 'B_X_gse (mean)': omni_Bx_ave, 'B_Y_gse (mean)': omni_By_ave, 'B_Z_gse (mean)': omni_Bz_ave, 'V_X_gse (mean)': omni_Vx_ave, 'V_Y_gse (mean)': omni_Vy_ave, 'V_Z_gse (mean)': omni_Vz_ave, 'M_A (mean)':omni_MA_ave, 'cone angle (mean)':omni_CA_ave,'Distance from X line (mean)': omni_sc_dist_mean, 'Np (median)': omni_N_med, 'B_mag (median)': omni_B_med, 'V_gse (median)': omni_V_med, 'B_X_gse (median)': omni_Bx_med, 'B_Y_gse (median)': omni_By_med, 'B_Z_gse (median)': omni_Bz_med, 'V_X_gse (median)': omni_Vx_med, 'V_Y_gse (median)': omni_Vy_med, 'V_Z_gse (median)': omni_Vz_med, 'M_A (median)':omni_MA_med, 'cone angle (median)':omni_CA_med, 'Distance from X line (median)': omni_sc_dist_med, 'max cone angle deviation': max_angle_deviation})
+    om_averages = pd.DataFrame({'datetime': only_full_windows, 'Np (mean)': omni_N_ave, 'B_mag (mean)': omni_B_ave, 'V_gse (mean)': omni_V_ave, 'B_X_gse (mean)': omni_Bx_ave, 'B_Y_gse (mean)': omni_By_ave, 'B_Z_gse (mean)': omni_Bz_ave, 'V_X_gse (mean)': omni_Vx_ave, 'V_Y_gse (mean)': omni_Vy_ave, 'V_Z_gse (mean)': omni_Vz_ave, 'M_A (mean)':omni_MA_ave, 'cone angle (mean)':omni_CA_ave,'Distance from X line (mean)': omni_sc_dist_mean, 'Np (median)': omni_N_med, 'B_mag (median)': omni_B_med, 'V_gse (median)': omni_V_med, 'B_X_gse (median)': omni_Bx_med, 'B_Y_gse (median)': omni_By_med, 'B_Z_gse (median)': omni_Bz_med, 'V_X_gse (median)': omni_Vx_med, 'V_Y_gse (median)': omni_Vy_med, 'V_Z_gse (median)': omni_Vz_med, 'M_A (median)':omni_MA_med, 'cone angle (median)':omni_CA_med, 'Distance from X line (median)': omni_sc_dist_med, 'max IMF angle deviation': max_angle_deviation})
 
-    om_averages['Norm Bx'] = om_averages['B_X_gse']/om_averages['B_mag']
-    om_averages['Norm By'] = om_averages['B_Y_gse']/om_averages['B_mag']
-    om_averages['Norm Bz'] = om_averages['B_Z_gse']/om_averages['B_mag']
-    
     return(om_averages)
 
