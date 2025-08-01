@@ -49,6 +49,7 @@ def omni_seg(om_df, only_full_windows):
     omni_MA_med = []
     omni_CA_med = []
     omni_sc_dist_med = []
+    max_angle_dev = []
     
     for i in only_full_windows:
     
@@ -72,9 +73,8 @@ def omni_seg(om_df, only_full_windows):
         y_dist = mask.loc[:,'Sc_y_gse'].to_numpy()
         z_dist = mask.loc[:,'Sc_z_gse'].to_numpy()
         dist_arr = (y_dist**2 + z_dist**2)**0.5
-        dist_mean = np.mean(dist_arr)
-        dist_median = np.median(dist_arr)
-        
+        dist_mean = np.nanmean(dist_arr)
+        dist_median = np.nanmedian(dist_arr)
         
         median_B = mask.loc[:,'B_mag'].median()
         median_V = mask.loc[:,'V_gse'].median()
@@ -133,13 +133,22 @@ def omni_seg(om_df, only_full_windows):
 
         for i in range(np.shape(mag_field_vectors)[0]):
             for j in range(np.shape(mag_field_vectors)[0]):
-                dot_prod = np.dot(mag_field_vectors[i, :], mag_field_vectors[j, :])
-                angle_in_deg = np.rad2deg(np.arccos(dot_prod))
-                rot_angles.append(angle_in_deg)
-
-        max_angle_deviation = max(rot_angles)
-
-    om_averages = pd.DataFrame({'datetime': only_full_windows, 'Np (mean)': omni_N_ave, 'B_mag (mean)': omni_B_ave, 'V_gse (mean)': omni_V_ave, 'B_X_gse (mean)': omni_Bx_ave, 'B_Y_gse (mean)': omni_By_ave, 'B_Z_gse (mean)': omni_Bz_ave, 'V_X_gse (mean)': omni_Vx_ave, 'V_Y_gse (mean)': omni_Vy_ave, 'V_Z_gse (mean)': omni_Vz_ave, 'M_A (mean)':omni_MA_ave, 'cone angle (mean)':omni_CA_ave,'Distance from X line (mean)': omni_sc_dist_mean, 'Np (median)': omni_N_med, 'B_mag (median)': omni_B_med, 'V_gse (median)': omni_V_med, 'B_X_gse (median)': omni_Bx_med, 'B_Y_gse (median)': omni_By_med, 'B_Z_gse (median)': omni_Bz_med, 'V_X_gse (median)': omni_Vx_med, 'V_Y_gse (median)': omni_Vy_med, 'V_Z_gse (median)': omni_Vz_med, 'M_A (median)':omni_MA_med, 'cone angle (median)':omni_CA_med, 'Distance from X line (median)': omni_sc_dist_med, 'max IMF angle deviation': max_angle_deviation})
+                if i != j:
+                    dot_prod = np.dot(mag_field_vectors[i, :], mag_field_vectors[j, :])
+                    angle_in_deg = np.rad2deg(np.arccos(dot_prod))
+                    rot_angles.append(angle_in_deg)
+                if i == j:
+                    rot_angles.append(0)
+                    
+        if len(rot_angles) >= 1:
+            
+            max_angle_deviation = np.nanmax(rot_angles)
+            max_angle_dev.append(max_angle_deviation)
+            
+        else:
+            max_angle_dev.append(np.nan)
+        
+    om_averages = pd.DataFrame({'datetime': only_full_windows, 'Np (mean)': omni_N_ave, 'B_mag (mean)': omni_B_ave, 'V_gse (mean)': omni_V_ave, 'B_X_gse (mean)': omni_Bx_ave, 'B_Y_gse (mean)': omni_By_ave, 'B_Z_gse (mean)': omni_Bz_ave, 'V_X_gse (mean)': omni_Vx_ave, 'V_Y_gse (mean)': omni_Vy_ave, 'V_Z_gse (mean)': omni_Vz_ave, 'M_A (mean)':omni_MA_ave, 'cone angle (mean)':omni_CA_ave,'Distance from X line (mean)': omni_sc_dist_ave, 'Np (median)': omni_N_med, 'B_mag (median)': omni_B_med, 'V_gse (median)': omni_V_med, 'B_X_gse (median)': omni_Bx_med, 'B_Y_gse (median)': omni_By_med, 'B_Z_gse (median)': omni_Bz_med, 'V_X_gse (median)': omni_Vx_med, 'V_Y_gse (median)': omni_Vy_med, 'V_Z_gse (median)': omni_Vz_med, 'M_A (median)':omni_MA_med, 'cone angle (median)':omni_CA_med, 'Distance from X line (median)': omni_sc_dist_med, 'max IMF angle deviation': max_angle_dev})
 
     return(om_averages)
 
