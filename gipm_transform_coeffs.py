@@ -10,7 +10,7 @@ def gipm_transform_coeffs_mean(om_averages):
     GIPM_X_Vecs = []
     GIPM_Y_Vecs = []
     GIPM_Z_Vecs = []
-    FAC_coeffs =[]
+    FAC_coeffs = []
 
     #taking average B and V vectors from input, apply GIPM_trans function to find GIPM basis vectors
     #and scaling coefficient (FAC) during this time window.
@@ -45,7 +45,6 @@ def gipm_transform_coeffs_mean(om_averages):
         FAC_coeffs.append(FAC)
         
     return(GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs)
-
 
 def gipm_transform_coeffs_median(om_averages):
     
