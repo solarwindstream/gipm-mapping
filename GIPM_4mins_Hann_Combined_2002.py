@@ -5,40 +5,37 @@ import cdflib
 import pandas as pd
 import numpy as np
 import math
-
-from Cluster_CDF_conv import Cluster_cdf_conv
-
-from window_det_4min import window_det
-from omni_seg_centered import omni_seg
-from gipm_transform_coeffs import gipm_transform_coeffs_mean, gipm_transform_coeffs_median
-from GIPM_loc_conv import gipm_loc_transform
-from new_xyz import new_xyz
-from cone_angle_dfs import cone_angle_dfs
 from math import pi
 import statistics
-from FFT_Hann import FFT_Hann
 import glob
+
+from Cluster_CDF_conv import Cluster_cdf_conv
+from window_det_4min import window_det
+from omni_seg_centered import omni_seg
+from gipm_transform_coeffs import gipm_transform_coeffs_mean
+from GIPM_loc_conv import gipm_loc_transform
+from new_xyz import new_xyz
+from FFT_Hann import FFT_Hann
+
 
 pd.options.mode.chained_assignment = None
 
 year_n = '2002'
 
+############
+
 def cdfconv_gipm(year, df_list, sc_name):
     
-    #load ONLY this year's omni dfs
+    #input each Cluster df (approximately 1-2 days data) into window_det
+    #returning a list of start times for each interval with 22Hz data
     
-    omni_path = '/data/SPCS-HIETALA-Shocks/GIPM-MAPPING/New_OMNI_Raw_Files/CSVs/Raw_OMNI_' + year + '.csv'
-    om = pd.read_csv(omni_path)
-
-    om['datetime'] = pd.to_datetime(om['datetime'])
-    om = om.set_index('datetime') 
-
-    #determine full windows lists.
     f_winds_all = []
 
     for df in df_list:
         f_winds = window_det(df)
         f_winds_all.append(f_winds)
+
+    #taking those start times, average the OMNI upstream values in the ten minute window centered on the four-minute interval centre.
     
     om_ave_list = []
     
@@ -48,7 +45,7 @@ def cdfconv_gipm(year, df_list, sc_name):
         om_averages = om_averages.set_index('datetime')
         om_ave_list.append(om_averages)
 
-    print('Omni averages found')
+    print('OMNI averages found')
 
     #find GIPM rotation matrices and scaling coefficient for every Cluster location
     
@@ -56,11 +53,6 @@ def cdfconv_gipm(year, df_list, sc_name):
     GIPM_Y_mean_list = []
     GIPM_Z_mean_list = []
     FAC_coeff_mean_list = []
-    
-    GIPM_X_median_list = []
-    GIPM_Y_median_list = []
-    GIPM_Z_median_list = []
-    FAC_coeff_median_list = []
 
     for om_df in om_ave_list:
         
@@ -71,20 +63,13 @@ def cdfconv_gipm(year, df_list, sc_name):
         GIPM_Z_mean_list.append(GIPM_Z_Vecs)
         FAC_coeff_mean_list.append(FAC_coeffs)
         
-        #median
-        GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs = gipm_transform_coeffs_median(om_df)
-        GIPM_X_median_list.append(GIPM_X_Vecs)
-        GIPM_Y_median_list.append(GIPM_Y_Vecs)
-        GIPM_Z_median_list.append(GIPM_Z_Vecs)
-        FAC_coeff_median_list.append(FAC_coeffs)
-
     
     #now combine these basis vectors and co-efficients with Cluster GSE location data to transform into GIPM
     Cluster_GIPM_locs_list = []
     
     #mean AND median locations both produced by gipm_loc_transform
-    for p,q,i,j,k,m,n,r,s,t in zip(f_winds_all, df_list, GIPM_X_mean_list, GIPM_Y_mean_list, GIPM_Z_mean_list, FAC_coeff_mean_list, GIPM_X_median_list, GIPM_Y_median_list, GIPM_Z_median_list, FAC_coeff_median_list):
-        Cluster_dt_loc = gipm_loc_transform(p,q,i,j,k,m,n,r,s,t)
+    for p,q,i,j,k,m in zip(f_winds_all, df_list, GIPM_X_mean_list, GIPM_Y_mean_list, GIPM_Z_mean_list, FAC_coeff_mean_list):
+        Cluster_dt_loc = gipm_loc_transform(p,q,i,j,k,m)
         Cluster_GIPM_locs_list.append(Cluster_dt_loc)
         
     print('GIPM transform done')
@@ -97,6 +82,7 @@ def cdfconv_gipm(year, df_list, sc_name):
         gipm_df.append(df)
 
     #now find min, max and mean B, integrated power, and save with relevant OMNI average values.
+    #this would also surely have been better as a module/function...
 
     list_expanded_dfs = []
 
@@ -265,7 +251,14 @@ def cdfconv_input(year):
     cdfconv_gipm(year, df_list_c4, 'C4')
     
     #########################
+    
+#load this year's omni dfs
+    
+omni_path = '/data/SPCS-HIETALA-Shocks/GIPM-MAPPING/New_OMNI_Raw_Files/CSVs/Raw_OMNI_' + year_n + '.csv'
+om = pd.read_csv(omni_path)
 
+om['datetime'] = pd.to_datetime(om['datetime'])
+om = om.set_index('datetime') 
 cdfconv_input(year_n)
 
 

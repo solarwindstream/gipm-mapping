@@ -10,6 +10,7 @@ def FFT_Hann(ULF_df_4mins):
 
     # sampling rate
     sample_rate = 1/22.4
+    #energy correction factor (to correct for Hann windowing)
     ecf = np.sqrt(8/3)
     
     #######FOUR MINUTES
@@ -72,28 +73,32 @@ def FFT_Hann(ULF_df_4mins):
     ULF_df_4mins['B Perp 2'] = list_norm_2_vals
     ULF_df_4mins['B Para'] = list_para_vals
 
+    #removing mean from parallel direction so we are looking only at fluctuations
+
     para_mean_4 = ULF_df_4mins['B Para'].mean()
     ULF_df_4mins['B Para'] = ULF_df_4mins['B Para'] - para_mean_4
 
-    #now calculate power spectrum for each perp component & sum.
+    #now we have fluctuations resolved along B paralllel and perp directions: calculate power spectrum for each component
 
     #FFT 4 mins norm 1
     x_4mins_perp_1 = ULF_df_4mins['B Perp 1'].to_numpy()
+    #applying hann window using np.hanning
     four_min_hann = np.hanning(len(x_4mins_perp_1))
     x_4mins_perp_1 = x_4mins_perp_1*four_min_hann
+    #ortho normalisation for rfft
     X_4mins_perp_1 = rfft(x_4mins_perp_1,norm='ortho')
-    N_4mins_perp_1= x_4mins_perp_1.size
-    freq_4mins_perp_1 = np.fft.rfftfreq(N_4mins_perp_1, d=sample_rate)
+    
+    #energy correction for Hann window, x2 factor for rfft:
     power_4mins_perp_1 = 2*(np.abs(X_4mins_perp_1)**2)*ecf*sample_rate
 
     #FFT 4 mins norm 2
     x_4mins_perp_2 = ULF_df_4mins['B Perp 2'].to_numpy()
     x_4mins_perp_2 = x_4mins_perp_2*four_min_hann
     X_4mins_perp_2 = rfft(x_4mins_perp_2,norm='ortho')
-    N_4mins_perp_2 = x_4mins_perp_2.size
-    freq_4mins_perp_2 = np.fft.rfftfreq(N_4mins_perp_2, d=sample_rate)
+    #energy correction for Hann window, x2 factor for rfft:
     power_4mins_perp_2 = 2*(np.abs(X_4mins_perp_2)**2)*ecf*sample_rate
-
+    
+    #summing perpendicular components
     power_4mins_perp = power_4mins_perp_1 + power_4mins_perp_2
 
     #FFT parallel
@@ -101,16 +106,16 @@ def FFT_Hann(ULF_df_4mins):
     x_4mins_para = x_4mins_para*four_min_hann
     X_4mins_para = rfft(x_4mins_para,norm='ortho')
     N_4mins_para= x_4mins_para.size
-    freq_4mins_para = np.fft.rfftfreq(N_4mins_para, d=sample_rate)
     power_4mins_para = 2*(np.abs(X_4mins_para)**2)*ecf*sample_rate
+
+    #use rfft freq for correct frequencies
+    freq_4mins = np.fft.rfftfreq(N_4mins_para, d=sample_rate)
 
     ## Compute the power into the required frequency range using midpoint integration
     F_LOW,F_HIGH = 7e-3,1e-1
-    mask = (freq_4mins_para>F_LOW) & (freq_4mins_para<F_HIGH)
-    delta_f = freq_4mins_para[1] - freq_4mins_para[0]
+    mask = (freq_4mins>F_LOW) & (freq_4mins<F_HIGH)
+    delta_f = freq_4mins[1] - freq_4mins[0]
     P_para = np.sum(power_4mins_para[mask])*delta_f
-
-    mask = (freq_4mins_perp_1>F_LOW) & (freq_4mins_perp_1<F_HIGH)
     P_perp = np.sum(power_4mins_perp[mask])*delta_f
     
-    return(P_para, P_perp, freq_4mins_para, power_4mins_para, power_4mins_perp_1, power_4mins_perp_2)
+    return(P_para, P_perp, freq_4mins, power_4mins_para, power_4mins_perp_1, power_4mins_perp_2)
