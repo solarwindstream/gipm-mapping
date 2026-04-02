@@ -152,3 +152,19 @@ def omni_seg(om_df, only_full_windows):
 
     return(om_averages)
 
+def omni_seg_ap_ratio(om_df, only_full_windows):
+    
+    time_back = dt.timedelta(minutes=3)
+    time_forward = dt.timedelta(minutes=7)
+
+    mask = om_df.loc[(om_df.index >= start_time) & (om_df.index < end_time)]
+
+    mean_Na_Np = mask.loc[:,'Na_Np'].mean()
+    median_Na_Np = mask.loc[:,'Na_Np'].mean()
+
+    om_averages = pd.DataFrame({'datetime': only_full_windows, 'Na_Np (mean)': mean_Na_Np, 'Na_Np (median)': median_Na_Np})
+    om_averages['datetime'] = pd.to_datetime(om_averages['datetime'])
+    om_averages = om_averages.set_index('datetime')
+
+    return(om_averages)
+    

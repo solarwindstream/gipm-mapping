@@ -81,4 +81,23 @@ def OMNI_cdf_conv(filename):
     
     return(om_df)
 
+def OMNI_cdf_conv_ap_ratio(filename):
+    cdf_file = cdflib.CDF(filename)
+
+    datetimes_omni = cdflib.cdfepoch.encode(cdf_file['Epoch'])
+
+    omni_dt_series = pd.Series(datetimes_omni) 
+    datetimes_omni_a = pd.to_datetime(omni_dt_series)
+    datetimes_omni_a = datetimes_omni_a.to_frame(name="datetime")
+
+    om_df = pd.DataFrame({'Na_Np': cdf_file['NaNp_Ratio']})
+    
+    om_df = om_df.join(datetimes_omni_a)
+    om_df = om_df.set_index('datetime')
+
+    #replace fill vals
+    om_df[om_df['Na_Np'] == 9.999] = np.nan
+    
+    return(om_df)
+
     
