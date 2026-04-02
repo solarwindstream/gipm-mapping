@@ -36,6 +36,8 @@ def cdfconv_gipm(year, df_list, sc_name):
         f_winds_all.append(f_winds)
 
     #taking those start times, average the OMNI upstream values in the ten minute window centered on the four-minute interval centre.
+    #note that in absence of data, this will just return nan instead of dropping window, which it probably should have done
+    #would save time on computing spectra
     
     om_ave_list = []
     
@@ -48,6 +50,7 @@ def cdfconv_gipm(year, df_list, sc_name):
     print('OMNI averages found')
 
     #find GIPM rotation matrices and scaling coefficient for every Cluster location
+    #will be NaN for instances with no OMNI data, instead of dropping them
     
     GIPM_X_mean_list = []
     GIPM_Y_mean_list = []
@@ -67,7 +70,7 @@ def cdfconv_gipm(year, df_list, sc_name):
     #now combine these basis vectors and co-efficients with Cluster GSE location data to transform into GIPM
     Cluster_GIPM_locs_list = []
     
-    #mean AND median locations both produced by gipm_loc_transform
+    #mean locations produced by gipm_loc_transform
     for p,q,i,j,k,m in zip(f_winds_all, df_list, GIPM_X_mean_list, GIPM_Y_mean_list, GIPM_Z_mean_list, FAC_coeff_mean_list):
         Cluster_dt_loc = gipm_loc_transform(p,q,i,j,k,m)
         Cluster_GIPM_locs_list.append(Cluster_dt_loc)
@@ -88,10 +91,16 @@ def cdfconv_gipm(year, df_list, sc_name):
 
     time_window = dt.timedelta(seconds=240)
 
+    #poorly named variables, oof
+
     for i,j,k in zip(df_list, gipm_df, om_ave_list):
 
         #empty lists set up for all variables
         cl_min_list, cl_mean_list, cl_max_list, cl_median_list, cl_std_list, cone_angle_mean_list, cone_angle_med_list, ma_mean_list, ma_med_list, omni_mean_B_list, omni_med_B_list, omni_mean_V_list, omni_med_V_list, omni_mean_Np_list, omni_med_Np_list, omni_ave_max_IMF_dev_list, omni_sc_dist_mean_list, omni_sc_dist_median_list, para_i_p_list, perp_i_p_list, para_norm_i_p_list, perp_norm_i_p_list, times = ([] for i in range(23))
+
+        #masking original cluster dataframe for each window as previously determined
+        #which now has a GIPM location associated with it
+        #and copying across average OMNI values for each interval from those we found earlier.
         
         for m in j.index:
             start_time = m
@@ -113,7 +122,8 @@ def cdfconv_gipm(year, df_list, sc_name):
             omni_sc_dist_mean = k.loc[m, 'Distance from X line (mean)']
             omni_sc_dist_median = k.loc[m, 'Distance from X line (median)']
             
-            
+            #preventing error by checking that there is Cluster obs (but since we already filtered windows for this, it should never have been a problem?)
+            #and then finding Cluster statistics on the overall magnetic field
             if Cluster_list:
                 Cluster_min = min(Cluster_list)
                 Cluster_max = max(Cluster_list)
@@ -127,10 +137,10 @@ def cdfconv_gipm(year, df_list, sc_name):
                 Cluster_median_rat = Cluster_median/omni_ave_B
                 
                 #calculate power spectrum and integrated power for this window
-                para_int_p, perp_int_p, freq, power_s_para, power_s_perp_1, power_s_perp_2 = FFT_Hann(mask)
+                para_int_p, perp_int_p, freq, power_spectrum_para, power_spectrum_perp_1, power_spectrum_perp_2 = FFT_Hann(mask)
                 
-                #save freq and power_s as their own df, named after 1- window start and 2- sc
-                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':power_s_para, 'Perp 1 Power': power_s_perp_1, 'Perp 2 Power':power_s_perp_2})
+                #save freq and power_spectrum as their own df, named after 1- window start and 2- sc
+                spectral_df = pd.DataFrame({'Freq':freq, 'Parallel Power':power_spectrum_para, 'Perp 1 Power': power_spectrum_perp_1, 'Perp 2 Power':power_spectrum_perp_2})
                 spec_fname = 'FS_' + str(m) + '_' + sc_name + '.csv'
                 fpath_spec = '/data/SPCS-HIETALA-Shocks/GIPM-MAPPING/Cluster_Spectra/'+spec_fname
                 spectral_df.to_csv(fpath_spec)
