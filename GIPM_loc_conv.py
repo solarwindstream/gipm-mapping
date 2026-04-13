@@ -7,6 +7,10 @@ import pandas as pd
 def gipm_loc_transform(only_full_windows, df_a, GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z_Vecs, FAC_coeffs):
     
     time_window = dt.timedelta(seconds=240)
+
+    Cluster_GSE_X = []
+    Cluster_GSE_Y = []
+    Cluster_GSE_Z = []
     
     Cluster_GIPM_X = []
     Cluster_GIPM_Y = []
@@ -23,6 +27,10 @@ def gipm_loc_transform(only_full_windows, df_a, GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z
         x_gse_mean = mask['X_gse'].mean()
         y_gse_mean = mask['Y_gse'].mean()
         z_gse_mean = mask['Z_gse'].mean()
+
+        Cluster_GSE_X.append(x_gse_mean)
+        Cluster_GSE_Y.append(y_gse_mean)
+        Cluster_GSE_Z.append(z_gse_mean)
         
         #form location arrays for every observation and then transform using coeffs/FAC
         Cluster_GSE = np.array([x_gse_mean, y_gse_mean, z_gse_mean])
@@ -63,8 +71,7 @@ def gipm_loc_transform(only_full_windows, df_a, GIPM_X_Vecs, GIPM_Y_Vecs, GIPM_Z
         Cluster_GIPM_Y.append(y_a)
         Cluster_GIPM_Z.append(z_a)
         
-    Cluster_dt_loc = pd.DataFrame({'datetime':only_full_windows, 'GIPM X (OMNI mean)': Cluster_GIPM_X, 'GIPM Y (OMNI mean)': Cluster_GIPM_Y, 'GIPM Z (OMNI mean)': Cluster_GIPM_Z})
+    Cluster_dt_loc = pd.DataFrame({'datetime':only_full_windows, 'GSE X': Cluster_GSE_X, 'GSE Y': Cluster_GSE_Y, 'GSE Z': Cluster_GSE_Z, 'GIPM X (OMNI mean)': Cluster_GIPM_X, 'GIPM Y (OMNI mean)': Cluster_GIPM_Y, 'GIPM Z (OMNI mean)': Cluster_GIPM_Z})
         
-
     return(Cluster_dt_loc)  
     

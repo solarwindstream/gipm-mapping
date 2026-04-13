@@ -117,5 +117,12 @@ def FFT_Hann(ULF_df_4mins):
     delta_f = freq_4mins[1] - freq_4mins[0]
     P_para = np.sum(power_4mins_para[mask])*delta_f
     P_perp = np.sum(power_4mins_perp[mask])*delta_f
+    P_perp_1 = np.sum(power_4mins_perp_1[mask])*delta_f
+    P_perp_2 = np.sum(power_4mins_perp_2[mask])*delta_f
+
+    if P_perp_1 > P_perp_2:
+        P_ellip = P_perp_1/P_perp_2
+    else:
+        P_ellip = P_perp_2/P_perp_1
     
-    return(P_para, P_perp, freq_4mins, power_4mins_para, power_4mins_perp_1, power_4mins_perp_2)
+    return(P_para, P_perp, P_ellip, freq_4mins, power_4mins_para, power_4mins_perp_1, power_4mins_perp_2)
