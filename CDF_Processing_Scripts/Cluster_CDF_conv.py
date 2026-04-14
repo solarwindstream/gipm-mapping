@@ -169,7 +169,6 @@ def Cluster_cdf_conv(filename_a, sc_string):
 
 
             df_a['R_GSE'] = (df_a['X_gse']**2 + df_a['Y_gse']**2 + df_a['Z_gse']**2)**0.5
-            plasma is dumb
             df_a['X_gse'] = df_a['X_gse']/6371
             df_a['Y_gse'] = df_a['Y_gse']/6371
             df_a['Z_gse'] = df_a['Z_gse']/6371

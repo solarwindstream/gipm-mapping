@@ -41,9 +41,14 @@ def GIPM_trans(b_gse, v_gse):
     
     z_comp = np.dot(b_gse,Z_GIPM)
     z_comp_two_decimals = (round(z_comp, 2))
+
+    error_check = 0
     
     if not z_comp_two_decimals == 0:
-        print('error in GIPM transform, z_comp:', z_comp)
+        error_check = 1
+        if not np.isnan(z_comp_two_decimals):
+            print('error in GIPM transform, z_comp:', z_comp_two_decimals)
 
-    return(X_GIPM, Y_GIPM, Z_GIPM)
+
+    return(X_GIPM, Y_GIPM, Z_GIPM, error_check)
 

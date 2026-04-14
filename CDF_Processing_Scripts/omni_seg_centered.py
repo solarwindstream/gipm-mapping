@@ -2,10 +2,18 @@
 #this function takes 1 min OMNI readings and a list of time intervals and produces df of omni average B, V and n values
 #including components
 #for 10 minute window centered on midpoint of time interval 
+#outputting dfs with datetime index formatting
+
 import datetime as dt
 import pandas as pd
 import numpy as np
 import math
+
+pd.options.mode.chained_assignment = None
+import warnings
+
+warnings.filterwarnings("ignore", message="Mean of empty slice")
+warnings.filterwarnings("ignore", message="All-NaN slice encountered")
 
 #from https://stackoverflow.com/questions/11620914/how-do-i-remove-nan-values-from-a-numpy-array
 #temporarily converting to dataframe in order to use pandas built-in dropna function
@@ -150,21 +158,35 @@ def omni_seg(om_df, only_full_windows):
         
     om_averages = pd.DataFrame({'datetime': only_full_windows, 'Np (mean)': omni_N_ave, 'B_mag (mean)': omni_B_ave, 'V_gse (mean)': omni_V_ave, 'B_X_gse (mean)': omni_Bx_ave, 'B_Y_gse (mean)': omni_By_ave, 'B_Z_gse (mean)': omni_Bz_ave, 'V_X_gse (mean)': omni_Vx_ave, 'V_Y_gse (mean)': omni_Vy_ave, 'V_Z_gse (mean)': omni_Vz_ave, 'M_A (mean)':omni_MA_ave, 'cone angle (mean)':omni_CA_ave,'Distance from X line (mean)': omni_sc_dist_ave, 'Np (median)': omni_N_med, 'B_mag (median)': omni_B_med, 'V_gse (median)': omni_V_med, 'B_X_gse (median)': omni_Bx_med, 'B_Y_gse (median)': omni_By_med, 'B_Z_gse (median)': omni_Bz_med, 'V_X_gse (median)': omni_Vx_med, 'V_Y_gse (median)': omni_Vy_med, 'V_Z_gse (median)': omni_Vz_med, 'M_A (median)':omni_MA_med, 'cone angle (median)':omni_CA_med, 'Distance from X line (median)': omni_sc_dist_med, 'max IMF angle deviation': max_angle_dev})
 
+    om_averages['datetime'] = pd.to_datetime(om_averages['datetime'])
+    om_averages = om_averages.set_index('datetime')
+        
     return(om_averages)
 
 def omni_seg_ap_ratio(om_df, only_full_windows):
-    
+
     time_back = dt.timedelta(minutes=3)
     time_forward = dt.timedelta(minutes=7)
 
-    mask = om_df.loc[(om_df.index >= start_time) & (om_df.index < end_time)]
+    omni_NaNp_ave = []
+    omni_NaNp_med = []
+    
+    for i in only_full_windows:
+    
+        start_time = i - time_back
+        end_time = i + time_forward
+        
+        mask = om_df.loc[(om_df.index >= start_time) & (om_df.index < end_time)]
+        
+        mean_Na_Np = mask.loc[:,'Na_Np'].mean()
+        median_Na_Np = mask.loc[:,'Na_Np'].median()
 
-    mean_Na_Np = mask.loc[:,'Na_Np'].mean()
-    median_Na_Np = mask.loc[:,'Na_Np'].mean()
-
-    om_averages = pd.DataFrame({'datetime': only_full_windows, 'Na_Np (mean)': mean_Na_Np, 'Na_Np (median)': median_Na_Np})
+        omni_NaNp_ave.append(mean_Na_Np)
+        omni_NaNp_med.append(median_Na_Np)
+        
+    om_averages = pd.DataFrame({'datetime': only_full_windows, 'Na_Np (mean)': omni_NaNp_ave, 'Na_Np (median)': omni_NaNp_med})
     om_averages['datetime'] = pd.to_datetime(om_averages['datetime'])
     om_averages = om_averages.set_index('datetime')
-
+        
     return(om_averages)
     
