@@ -141,3 +141,4 @@ cython_debug/
 
 #Mac specific
 *.DS_Store
+CDF_Processing_Scripts/.settings/*
