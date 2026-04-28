@@ -13,8 +13,8 @@ from merka05_surface_eq_array_GIPM import merka05_surface_eq_array_GIPM
 from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 import matplotlib.ticker as ticker
 
-def model_calcs(angle_class):
-    """Calculate parameters for Shue and Merka models required for plot, as well as cone angle line."""
+def model_calcs():
+    """Calculate parameters for Shue and Merka models required for plot"""
 
     #Shue magnetopause model, D = 1.76 nPa
 
@@ -53,16 +53,15 @@ def model_calcs(angle_class):
     z = 0 #z coordinates in Re
 
     [Xgipm,Ygipm,Zgipm] = np.meshgrid(x,y,z,indexing="ij")
-
+    XMA_all = 10
     fitting_coeffs = merka05_surface_eq_array_GIPM(XMA_all)
 
     Xn = Xgipm
     Yn = Ygipm
     Zn = Zgipm
     f = fitting_coeffs[0]*Xn**2 + fitting_coeffs[1]*Yn**2 + fitting_coeffs[2]*Zn**2+ 2*fitting_coeffs[3]*Xn*Yn + 2*fitting_coeffs[4]*Yn*Zn + 2*fitting_coeffs[5]*Xn*Zn + 2*fitting_coeffs[6]*Xn+2*fitting_coeffs[7]*Yn + 2*fitting_coeffs[8]*Zn + fitting_coeffs[9]
-    inter_med = fitting_coeffs[6]**2 - (fitting_coeffs[0]*fitting_coeffs[9])
     
-    return(Xn, Yn, Zn, f)
+    return(X_shue, R_shue, Xn, Yn, Zn, f, fitting_coeffs)
 
 
 def draw_background(ax, xg, yg, f, x_shue, r_shue):
@@ -71,18 +70,7 @@ def draw_background(ax, xg, yg, f, x_shue, r_shue):
     ax.plot(x_shue, r_shue, 'k', linewidth=1)
     ax.hlines(0, 0, 25, color='k', linewidth=1)
 
-
-def draw_hist(ax, hist, extent, cmap, v_bounds, angle_line):
-    """Draw heatmap + cone angle line. v_bounds is list taking lower, upper values in order."""
-    ax.imshow(hist, interpolation='none', origin='lower',
-              extent=extent, cmap=cmap, vmin=v_bounds[0], vmax=v_bounds[1])  
-    
-    # Bow shock intercept
-    
-    x_s = (-fitting_coeffs[6] + np.sqrt(inter_med)) / fitting_coeffs[0]
-    x_e = 30
-    y_s = 0
-
+def cone_angle_line(fitting_coeffs, angle_key):
     # Line slopes for different angle classes
     line_slopes = {
         "0–30°": np.tan(np.deg2rad(15)),
@@ -93,8 +81,33 @@ def draw_hist(ax, hist, extent, cmap, v_bounds, angle_line):
         "30-52.5°": np.tan(np.deg2rad(41.25)),
         "52.5-75°": np.tan(np.deg2rad(63.75)),
     }
+    # Bow shock intercept
+    inter_med = fitting_coeffs[6]**2 - (fitting_coeffs[0]*fitting_coeffs[9])
+    x_s = (-fitting_coeffs[6] + np.sqrt(inter_med)) / fitting_coeffs[0]
+    x_e = 30
+    y_s = 0
+    slope = line_slopes[angle_key]
+    y_e = -x_e * slope
+    # angle line parameters: (x_s, x_e, y_s, y_e)
+    angle_line = (x_s, x_e, y_s, y_e)
+    return(angle_line)
+
+
+def draw_hist(ax, hist, extent, cmap, v_bounds, angle_line):
+    """Draw heatmap + cone angle line. v_bounds is list taking lower, upper values in order."""
+    ax.imshow(hist, interpolation='none', origin='lower',
+              extent=extent, cmap=cmap, vmin=v_bounds[0], vmax=v_bounds[1])  
+
     x_s, x_e, y_s, y_e = angle_line
-    ax.plot([x_s, x_e], [y_s, angle_line[3]], color='k', linewidth=1)
+    ax.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
+
+def draw_heatmap(ax, hist, extent, cmap, cmap_norm, angle_line):
+    """Draw heatmap + flow line"""
+    ax.imshow(hist, interpolation='none', origin='lower',
+              extent=extent, cmap=cmap, norm=cmap_norm)
+    
+    x_s, x_e, y_s, y_e = angle_line
+    ax.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
 
 def set_limits(ax):
     ax.set_xlim(0, 20)

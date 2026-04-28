@@ -1,3 +1,6 @@
+import numpy as np 
+import pandas as pd
+
 def compute_hists2d(df):
     """Compute 2D heatmaps of power and compressibilty, ignoring bins with <50 intervals"""
     x_col='GIPM X (OMNI mean)'
@@ -64,6 +67,9 @@ def compute_freq_ellip_hists(df):
     w_compressive='Peak Compressive Frequency'
     w_transverse='Peak Transverse Frequency'
     w_ellipticity='Ratio of Perpendicular Power'
+
+    x_bin_edges = range(20)
+    y_bin_edges = range(-20, 20)
     
     hist, _, _ = np.histogram2d(
         df[x_col].to_numpy(),
