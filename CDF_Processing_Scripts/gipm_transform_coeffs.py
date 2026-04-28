@@ -33,7 +33,7 @@ def gipm_transform_coeffs_mean(om_averages):
         GIPM_Z_Vecs.append(Z_GIPM)
         error_count.append(error_check)
 
-    print('GIPM Error Ratio:', error_count.count(1), 'out of', len(error_count), 'intervals')
+    print('GIPM Error Ratio:', error_count.count(1), 'out of', len(error_count), 'intervals', flush=True)
         
     #now for each element find FAC
     

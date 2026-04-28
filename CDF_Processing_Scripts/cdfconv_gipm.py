@@ -12,8 +12,11 @@ from FFT_Hann import FFT_Hann
 
 #define the main conversion module!
 
-def cdfconv_gipm(year, df_list, sc_name):
-    
+tt
+
+def cdfconv_gipm(year, df_list, sc_name, om, omni_nanp_df):
+    no_dfs = len(df_list)
+    df_counter = 0
     #determine full windows lists.
     f_winds_all = []
 
@@ -152,7 +155,7 @@ def cdfconv_gipm(year, df_list, sc_name):
                     spectral_df = pd.DataFrame({'Frequency':freq, 'Compressive Power':power_s_para, 'Transverse Power 1': power_s_perp_1, 'Transverse Power 2':power_s_perp_2})
                     spectral_df['Total Transverse Power'] = spectral_df[ 'Transverse Power 1'] + spectral_df[ 'Transverse Power 2']
                     spec_fname = 'FS_' + str(win_start) + '_' + sc_name + '.csv'
-                    fpath_spec = '/Users/roseatkinson/Documents/Debug Output/Spectra_'+ year + '/' + spec_fname
+                    fpath_spec = '/gpfs/scratch/apx059/Spectra/Spectra'+ year + '/' + spec_fname
                     spectral_df.to_csv(fpath_spec)
 
                     #find the index of peak compressive power, zero removed
@@ -219,7 +222,7 @@ def cdfconv_gipm(year, df_list, sc_name):
                     times.append(win_start)
     
                 else:
-                    print('error: no cluster list')
+                    print('error: no cluster list', flush=True)
             
             if cl_min_list:
                 core_val_df = pd.DataFrame({'datetime': times,'B min/Bomni': cl_min_list, 'B mean/Bomni': cl_mean_list, 'B max/Bomni': cl_max_list, 'B median/Bomni': cl_median_list, 'B standard deviation/Bomni':cl_std_list, 'cone angle (mean)': cone_angle_mean_list, 'M_A (mean)': ma_mean_list, 'IMF B (mean)': omni_mean_B_list, 'SW V (mean)': omni_mean_V_list, 'SW Np (mean)': omni_mean_Np_list, 'SW Na/Np (mean)': omni_mean_NaNp_list, 'OMNI Dist from X line (mean)': omni_sc_dist_mean_list, 'Max IMF Deviation': omni_ave_max_IMF_dev_list, 'ULF Band Compressive Power': para_i_p_list, 'ULF Band Transverse Power': perp_i_p_list, 'ULF Band Normalised Compressive Power': para_norm_i_p_list, 'ULF Band Normalised Transverse Power': perp_norm_i_p_list, 'Peak Compressive Frequency': peak_comp_freq_list, 'Peak Transverse Frequency': peak_trans_freq_list,'Ratio of Perpendicular Power': ellipticity_list})
@@ -228,11 +231,15 @@ def cdfconv_gipm(year, df_list, sc_name):
                 secondary_val_df = secondary_val_df.set_index('datetime')
                 new_cl_df = gipm_df.join([core_val_df, secondary_val_df])
                 list_expanded_dfs.append(new_cl_df)
+
             else:
-                print('error: no cluster min list')
+                print('error: no cluster min list', flush=True)
+            
+            df_counter+=1
+            print('df:', df_counter, 'out of:', no_dfs, flush=True)
             
     #for df in Cluster_GIPM_locs_list
-    CSV_path = '/Users/roseatkinson/Documents/Debug Output/'
+    CSV_path = '/gpfs/scratch/apx059/Cluster_Int_CSVs/'
 
     for df in list_expanded_dfs:
         firstwin = df.index[0]

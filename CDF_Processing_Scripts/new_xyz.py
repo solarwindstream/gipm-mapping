@@ -18,6 +18,6 @@ def new_xyz(inp, trans_mat):
         #out = np.matmul(np.matmul(trans_mat.T, inp), trans_mat)
         out = trans_mat.dot(inp)
     else:
-        print("Check array dimensions.")
+        print("Check array dimensions.", flush=True)
 
     return out

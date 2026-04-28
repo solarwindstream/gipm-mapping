@@ -31,11 +31,11 @@ def GIPM_trans(b_gse, v_gse):
     
     #print(X_GIPM, Y_GIPM, Z_GIPM)
     if not X_GIPM.shape == (3,):
-        print('error XGIPM not correct shape')
+        print('error XGIPM not correct shape', flush=True)
     if not Y_GIPM.shape == (3,):
-        print('error YGIPM not correct shape')  
+        print('error YGIPM not correct shape', flush=True)  
     if not Z_GIPM.shape == (3,):
-        print('error ZGIPM not correct shape')
+        print('error ZGIPM not correct shape', flush=True)
     
     #check that the magnetic field is entirely in the XY plane:
     
@@ -47,7 +47,7 @@ def GIPM_trans(b_gse, v_gse):
     if not z_comp_two_decimals == 0:
         error_check = 1
         if not np.isnan(z_comp_two_decimals):
-            print('error in GIPM transform, z_comp:', z_comp_two_decimals)
+            print('error in GIPM transform, z_comp:', z_comp_two_decimals, flush=True)
 
 
     return(X_GIPM, Y_GIPM, Z_GIPM, error_check)
