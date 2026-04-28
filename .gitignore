@@ -80,6 +80,9 @@ target/
 .ipynb_checkpoints/*
 __pycache__/*
 Plotting_Notebooks/__pycache__/*
+ CDF_Processing_Scripts/.ipynb_checkpoints/*
+Plotting_Notebooks/.ipynb_checkpoints/*
+Testing Notebooks/.ipynb_checkpoints/*
 
 # IPython
 profile_default/
