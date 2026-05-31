@@ -59,6 +59,54 @@ def compute_hists2d(df):
     
     return hist, hist_comp, hist_trans, hist_compressibility
 
+def compute_hists2d_low_data(df):
+    """Compute 2D heatmaps of power, ignoring bins with <30 intervals"""
+    x_col='GIPM X (OMNI mean)'
+    y_col='GIPM Y (OMNI mean)'
+    w_compressive='ULF Band Normalised Compressive Power'
+    w_transverse='ULF Band Normalised Transverse Power'
+
+    x_bin_edges = range(20)
+    y_bin_edges = range(-20, 20)
+
+    hist, _, _ = np.histogram2d(
+        df[x_col].to_numpy(),
+        df[y_col].to_numpy(),
+        bins=[x_bin_edges, y_bin_edges]
+    )
+    hist = hist.T
+    hist[hist == 0] = np.nan
+
+    #produce a copy of count distribution histogram for masking purposes
+    hist_count = hist.copy()
+    hist_count[hist_count < 20] = np.nan
+
+    #compressive power histogram
+    hist_comp, _, _ = np.histogram2d(
+        df[x_col].to_numpy(),
+        df[y_col].to_numpy(),
+        bins=[x_bin_edges, y_bin_edges],
+        weights=df[w_compressive].to_numpy()
+    )
+    hist_comp = hist_comp.T
+    hist_comp[hist_comp == 0] = np.nan
+    #normalise to find averages
+    hist_comp = hist_comp/hist_count
+
+    #transverse power histogram
+    hist_trans, _, _ = np.histogram2d(
+        df[x_col].to_numpy(),
+        df[y_col].to_numpy(),
+        bins=[x_bin_edges, y_bin_edges],
+        weights=df[w_transverse].to_numpy()
+    )
+    hist_trans = hist_trans.T
+    hist_trans[hist_trans == 0] = np.nan
+    #normalise to find averages
+    hist_trans = hist_trans/hist_count
+
+    return hist, hist_comp, hist_trans
+
 
 def compute_freq_ellip_hists(df):
     """Compute 2D heatmaps of peak frequency and ellipticity, ignoring bins with <50 intervals"""
@@ -120,3 +168,99 @@ def compute_freq_ellip_hists(df):
     hist_ellipticity = hist_ellipticity/hist_count
     
     return hist, hist_comp, hist_trans, hist_ellipticity
+
+def compute_normalised_freq_hists(df):
+    """Compute 2D heatmaps of peak *normalised* frequency, ignoring bins with <50 intervals"""
+    x_col='GIPM X (OMNI mean)'
+    y_col='GIPM Y (OMNI mean)'
+    w_compressive='Normalised Compressive Frequency'
+    w_transverse='Normalised Transverse Frequency'
+
+    x_bin_edges = range(20)
+    y_bin_edges = range(-20, 20)
+    
+    hist, _, _ = np.histogram2d(
+        df[x_col].to_numpy(),
+        df[y_col].to_numpy(),
+        bins=[x_bin_edges, y_bin_edges]
+    )
+    hist = hist.T
+    hist[hist == 0] = np.nan
+
+    #produce a copy of count distribution histogram for masking purposes
+    hist_count = hist.copy()
+    hist_count[hist_count < 50] = np.nan
+
+    #compressive power histogram
+    hist_comp, _, _ = np.histogram2d(
+        df[x_col].to_numpy(),
+        df[y_col].to_numpy(),
+        bins=[x_bin_edges, y_bin_edges],
+        weights=df[w_compressive].to_numpy()
+    )
+    hist_comp = hist_comp.T
+    hist_comp[hist_comp == 0] = np.nan
+    #normalise to find averages
+    hist_comp = hist_comp/hist_count
+
+    #transverse power histogram
+    hist_trans, _, _ = np.histogram2d(
+        df[x_col].to_numpy(),
+        df[y_col].to_numpy(),
+        bins=[x_bin_edges, y_bin_edges],
+        weights=df[w_transverse].to_numpy()
+    )
+    hist_trans = hist_trans.T
+    hist_trans[hist_trans == 0] = np.nan
+    #normalise to find averages
+    hist_trans = hist_trans/hist_count
+    
+    return hist, hist_comp, hist_trans
+
+def compute_freq_hists_low_data(df):
+    """Compute 2D heatmaps of peak frequency, ignoring bins with <20 intervals"""
+    x_col='GIPM X (OMNI mean)'
+    y_col='GIPM Y (OMNI mean)'
+    w_compressive='Peak Compressive Frequency'
+    w_transverse='Peak Transverse Frequency'
+
+    x_bin_edges = range(0, 20)
+    y_bin_edges = range(-20, 20)
+    
+    hist, _, _ = np.histogram2d(
+        df[x_col].to_numpy(),
+        df[y_col].to_numpy(),
+        bins=[x_bin_edges, y_bin_edges]
+    )
+    hist = hist.T
+    hist[hist == 0] = np.nan
+
+    #produce a copy of count distribution histogram for masking purposes
+    hist_count = hist.copy()
+    hist_count[hist_count < 50] = np.nan
+
+    #compressive power histogram
+    hist_comp, _, _ = np.histogram2d(
+        df[x_col].to_numpy(),
+        df[y_col].to_numpy(),
+        bins=[x_bin_edges, y_bin_edges],
+        weights=df[w_compressive].to_numpy()
+    )
+    hist_comp = hist_comp.T
+    hist_comp[hist_comp == 0] = np.nan
+    #normalise to find averages
+    hist_comp = hist_comp/hist_count
+
+    #transverse power histogram
+    hist_trans, _, _ = np.histogram2d(
+        df[x_col].to_numpy(),
+        df[y_col].to_numpy(),
+        bins=[x_bin_edges, y_bin_edges],
+        weights=df[w_transverse].to_numpy()
+    )
+    hist_trans = hist_trans.T
+    hist_trans[hist_trans == 0] = np.nan
+    #normalise to find averages
+    hist_trans = hist_trans/hist_count
+    
+    return hist, hist_comp, hist_trans
