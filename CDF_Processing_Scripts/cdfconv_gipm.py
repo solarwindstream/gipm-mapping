@@ -12,8 +12,6 @@ from FFT_Hann import FFT_Hann
 
 #define the main conversion module!
 
-tt
-
 def cdfconv_gipm(year, df_list, sc_name, om, omni_nanp_df):
     no_dfs = len(df_list)
     df_counter = 0

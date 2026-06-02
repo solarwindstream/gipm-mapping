@@ -1029,3 +1029,100 @@ def NaNp_heatmap_plot_B_filt(property_key, nanp_ca_blocks, xedg, yedg, NaNp_lims
 
     path = "/Users/roseatkinson/Documents/New_Figs/CA_NaNp" + property_key + "lims_" + NaNp_lims[0] + NaNp_lims[1] + "B_const_3_5.png"
     plt.savefig(path)
+
+def CA_Error_Plot(property_key, ca_blocks, xedg, yedg):
+    """Cone Angle 1x5 grid """
+    #find constants for Merka & Shue
+    X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
+
+    fig = plt.figure(figsize=(8.5, 3), dpi=300, constrained_layout=True)
+    gs = fig.add_gridspec(
+        nrows=1, ncols=6,      # 1 column for patch labels
+        width_ratios=[0.35, 1, 1, 1, 1, 1],  # label column thinner
+        wspace=0.05, hspace=0.1
+    )
+
+    fig.suptitle(property_key, fontsize=18)
+    plt.rcParams['axes.labelsize'] = 14
+    
+    angle_titles = ["0–30°", "30–45°", "45–60°", "60–75°", "75–90°"]
+    extent = [xedg[0], xedg[-1], yedg[0], yedg[-1]]
+    # -------------------------------
+    # MAKE AXES FOR THE 1×5 PANELS
+    # -------------------------------
+    
+    axs = []     
+    for c in range(5):
+        ax = fig.add_subplot(gs[c + 1])
+        axs.append(ax)
+
+    # -------------------------------
+    # COLORMAP
+    # -------------------------------
+
+    powercmp = cm_cram.vik
+    power_norm = colors.TwoSlopeNorm(vmin=-1, vcenter=0., vmax=1)
+
+    # -------------------------------
+    # PLOT ALL PANELS
+    # -------------------------------
+
+    for col in range(5):    # angle class
+        
+        title = angle_titles[col]
+        ax = axs[col]
+
+        # Draw contour, magnetopause
+        draw_background(ax, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
+                        X_shue, R_shue)
+
+        # Histogram for this cell
+        hist = ca_blocks[col]
+        
+        angle_line = cone_angle_line(fitting_coeffs, title)
+
+        draw_heatmap(ax, hist, extent, powercmp, power_norm, angle_line)
+            
+        mask_inside_magnetopause(ax, X_shue, R_shue)
+            
+        # redraw magnetopause boundary so it stays crisp
+        ax.plot(X_shue, R_shue, 'k', linewidth=1)
+        set_limits(ax)
+
+        # Labels
+        ax.set_title(rf'$\alpha$ = {title}', fontsize=12)
+        ax.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+        if col == 0:
+            ax.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+            
+            
+
+    # -------------------------------
+    # COLORBAR
+    # -------------------------------
+
+    from matplotlib.cm import ScalarMappable
+
+    # --- Scalar mappables (independent of any single subplot image)
+    sm_power = ScalarMappable(norm=power_norm, cmap=powercmp)
+    sm_power.set_array([])
+
+    cbar1 = fig.colorbar(
+        sm_power,
+        ax=axs[4],
+        location='right',
+        pad=0.02,
+        extend='both'
+    )
+    cbar1.set_label('Prediction error')
+
+    # cbar1.ax.yaxis.set_major_formatter(ticker.LogFormatterMathtext())
+    # if property_key=='Ellipticity':
+    #     cbar1.set_ticks(ticks=[1, 2, 3, 4], labels=['1', '2', '3', '4'])
+    # if property_key=="Peak Transverse Frequency":
+    #     cbar1.set_ticks(ticks=[0.007, 0.01, 0.1], labels=['7', '10', '100'])
+    # if property_key=="Peak Compressive Frequency":
+    #     cbar1.set_ticks(ticks=[0.007, 0.01, 0.1], labels=['7', '10', '100'])
+
+    path = "/Users/roseatkinson/Documents/New_Figs/CA_" + property_key + ".png"
+    plt.savefig(path)
