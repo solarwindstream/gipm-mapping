@@ -47,7 +47,7 @@ takahashi_pref = q_p/(4*pi*m_p)
 cl_filtered_lowZ['Takahashi Frequency, Hz'] = 1E-9*takahashi_pref*(cl_filtered_lowZ['IMF B (mean)'])*(np.cos(np.deg2rad(cl_filtered_lowZ['cone angle (mean)'])))**2
 cl_filtered_lowZ['Heilig Frequency, Hz'] = cl_filtered_lowZ['Heilig'] = 1E-3*(0.78*cl_filtered_lowZ['M_A (mean)'] + 0.64)*cl_filtered_lowZ['IMF B (mean)']
 
-cl_filtered_lowZ['Takahashi Transverse Error'] = (cl_filtered_lowZ['Takahashi Frequency, Hz' - cl_filtered_lowZ['Peak Transverse Frequency']])/cl_filtered_lowZ['Peak Transverse Frequency']
+cl_filtered_lowZ['Takahashi Transverse Error'] = (cl_filtered_lowZ['Takahashi Frequency, Hz'] - cl_filtered_lowZ['Peak Transverse Frequency'])/cl_filtered_lowZ['Peak Transverse Frequency']
 cl_filtered_lowZ['Takahashi Compressive Error'] = (cl_filtered_lowZ['Takahashi Frequency, Hz'] - cl_filtered_lowZ['Peak Compressive Frequency'])/cl_filtered_lowZ['Peak Compressive Frequency']
 cl_filtered_lowZ['Heilig Transverse Error'] = (cl_filtered_lowZ['Heilig Frequency, Hz'] - cl_filtered_lowZ['Peak Transverse Frequency'])/cl_filtered_lowZ['Peak Transverse Frequency']
 
