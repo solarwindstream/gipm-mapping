@@ -42,15 +42,19 @@ cl_filtered_lowZ['Normalised Compressive Frequency'] = (cl_filtered_lowZ['Peak C
 pi = np.pi
 m_p = 1.67E-27
 q_p = 1.60E-19
+#1/2pi * q/m from gyrofreq
 takahashi_pref = q_p/(4*pi*m_p)
 
 cl_filtered_lowZ['Takahashi Frequency, Hz'] = 1E-9*takahashi_pref*(cl_filtered_lowZ['IMF B (mean)'])*(np.cos(np.deg2rad(cl_filtered_lowZ['cone angle (mean)'])))**2
-cl_filtered_lowZ['Heilig Frequency, Hz'] = cl_filtered_lowZ['Heilig'] = 1E-3*(0.78*cl_filtered_lowZ['M_A (mean)'] + 0.64)*cl_filtered_lowZ['IMF B (mean)']
+cl_filtered_lowZ['Heilig Frequency, Hz'] = 1E-3*(0.78*cl_filtered_lowZ['M_A (mean)'] + 0.64)*cl_filtered_lowZ['IMF B (mean)']
 
 cl_filtered_lowZ['Takahashi Transverse Error'] = (cl_filtered_lowZ['Takahashi Frequency, Hz'] - cl_filtered_lowZ['Peak Transverse Frequency'])/cl_filtered_lowZ['Peak Transverse Frequency']
 cl_filtered_lowZ['Takahashi Compressive Error'] = (cl_filtered_lowZ['Takahashi Frequency, Hz'] - cl_filtered_lowZ['Peak Compressive Frequency'])/cl_filtered_lowZ['Peak Compressive Frequency']
 cl_filtered_lowZ['Heilig Transverse Error'] = (cl_filtered_lowZ['Heilig Frequency, Hz'] - cl_filtered_lowZ['Peak Transverse Frequency'])/cl_filtered_lowZ['Peak Transverse Frequency']
 
+print(cl_filtered_lowZ['Takahashi Transverse Error'].describe())
+print(cl_filtered_lowZ['Takahashi Compressive Error'].describe())
+print(cl_filtered_lowZ['Heilig Transverse Error'].describe())
 
 ##FIRST PLOT BATCH: Peak Frequency (Compressive & Transverse) and ellipticity split by MA/CA
 MA_bounds = {"5_10": [5,10],"10_15": [10,15]}
@@ -241,20 +245,20 @@ print("CA-only filtered")
 #updated to include heatmaps, with bins w/ under 50 obs removed.
 
 histograms = []
-takahashi_trans_diff_heatmap = []
-takahashi_comp_diff_heatmap = []
-heilig_trans_diff_heatmap = []
+takahashi_trans_error_heatmap = []
+takahashi_comp_error_heatmap = []
+heilig_trans_error_heatmap = []
 
 for group_name, df in CA_filtered_frames.items():
     print(group_name)
-    histogram, takahashi_trans_diff_hm, takahashi_comp_diff_hm, heilig_trans_diff_hm = compute_error_hists(df)
+    histogram, takahashi_trans_error_hm, takahashi_comp_error_hm, heilig_trans_error_hm = compute_error_hists(df)
     histograms.append(histogram)
-    takahashi_trans_diff_heatmap.append(takahashi_trans_diff_hm)
-    takahashi_comp_diff_heatmap.append(takahashi_comp_diff_hm)
-    heilig_trans_diff_heatmap.append(heilig_trans_diff_hm)
+    takahashi_trans_error_heatmap.append(takahashi_trans_error_hm)
+    takahashi_comp_error_heatmap.append(takahashi_comp_error_hm)
+    heilig_trans_error_heatmap.append(heilig_trans_error_hm)
 
 print("histograms produced")
 
-CA_Error_Plot('Takahashi Transverse Error', takahashi_trans_diff_heatmap, xedg, yedg)
-CA_Error_Plot('Takahashi Compressive Error', takahashi_comp_diff_heatmap, xedg, yedg)
-CA_Error_Plot('Heilig Transverse Error', heilig_trans_diff_heatmap, xedg, yedg)
+CA_Error_Plot('Takahashi Transverse Error', takahashi_trans_error_heatmap, xedg, yedg)
+CA_Error_Plot('Takahashi Compressive Error', takahashi_comp_error_heatmap, xedg, yedg)
+CA_Error_Plot('Heilig Transverse Error', heilig_trans_error_heatmap, xedg, yedg)
