@@ -108,10 +108,14 @@ def draw_hist(ax, hist, extent, cmap, v_bounds, angle_line):
     x_s, x_e, y_s, y_e = angle_line
     ax.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
 
-def draw_heatmap(ax, hist, extent, cmap, cmap_norm, angle_line):
+def draw_heatmap(ax, hist, extent, cmap, cmap_norm, angle_line, **details):
+    if 'alpha' in details:
+        set_a = details['alpha']
+    else:
+        set_a = 1
     """Draw heatmap + flow line"""
     ax.imshow(hist, interpolation='none', origin='lower',
-              extent=extent, cmap=cmap, norm=cmap_norm)
+              extent=extent, cmap=cmap, norm=cmap_norm, alpha=set_a)
     
     x_s, x_e, y_s, y_e = angle_line
     ax.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
@@ -174,7 +178,7 @@ def CA_MA_Binned_Plot(property_key,comparison_key, ma_ca_blocks, xedg, yedg):
 
     #main cbar titles:
 
-    cbar_titles = {"Peak Transverse Frequency": "Frequency, mHz", "Peak Compressive Frequency": "Frequency, mHz", "Ellipticity": "Ellipticity", "Normalised Transverse Frequency": "Normalised Frequency, Hz/nT", "Normalised Compressive Frequency": "Normalised Frequency, Hz/nT"}
+    cbar_titles = {"Peak Transverse Frequency": "Frequency, mHz", "Peak Compressive Frequency": "Frequency, mHz", "Ellipticity": "Ellipticity", "Normalised Transverse Frequency": "Normalised Frequency, Hz/nT", "Normalised Compressive Frequency": "Normalised Frequency, Hz/nT", "Normalised Transverse Power": "Normalised Power", "Normalised Compressive Power": "Normalised Power", "Standard Deviation of Normalised Power": "Std Dev"}
 
     fig = plt.figure(figsize=(9, 8), dpi=300, constrained_layout=True)
     gs = fig.add_gridspec(
