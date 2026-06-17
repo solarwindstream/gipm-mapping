@@ -1232,3 +1232,46 @@ def CA_Abs_Error_Plot(property_key, ca_blocks, hist_blocks, xedg, yedg):
 
 
 
+#location map
+
+def locationmapping(location_list, location_refs):
+    """Unpack all points in location list as x,y lists and plot"""
+    X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
+
+    ###################
+    fig = plt.figure(figsize=(6, 4.5))
+    subfigs = fig.subfigures(1, 1)
+    axsLeft = subfigs.subplots()
+
+    loc_x = []
+    loc_y = []
+    loc_label_list_x = []
+    
+    for loc_pair in location_list:
+        loc_label_x = loc_pair[0]-1
+        loc_label_list_x.append(loc_label_x)
+        loc_x.append(loc_pair[0])
+        loc_y.append(loc_pair[1])
+
+    draw_background(axsLeft, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
+                        X_shue, R_shue)
+    
+    angle_line = cone_angle_line(fitting_coeffs, "0–30°")
+    
+    x_s, x_e, y_s, y_e = angle_line
+    
+    axsLeft.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
+    
+    axsLeft.scatter(loc_x, loc_y, marker="o", c="blue", s=60)
+
+    for loc_lab_x, loc_lab_y, loc_ref in zip(loc_label_list_x, loc_y, location_refs):
+        plt.text(loc_lab_x, loc_lab_y, loc_ref, color="maroon", weight= 'bold', fontsize=16)
+
+    set_limits(axsLeft)
+
+    axsLeft.set_title(r'Case Study Locations')
+    axsLeft.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+    axsLeft.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+
+    path = "/Users/roseatkinson/Documents/New_Figs/AlphaCaseStudies.png"
+    plt.savefig(path)
