@@ -1128,117 +1128,12 @@ def CA_Error_Plot(property_key, ca_blocks, xedg, yedg):
     plt.savefig(path)
 
 
+    
 ###############################################################################
-
-def CA_Abs_Error_Plot(property_key, ca_blocks, hist_blocks, xedg, yedg):
-    """Cone Angle 1x5 grid """
-    
-    #find constants for Merka & Shue
-    X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
-
-    fig = plt.figure(figsize=(8.5, 3), dpi=300, constrained_layout=True)
-    gs = fig.add_gridspec(
-        nrows=1, ncols=6,      # 1 column for patch labels
-        width_ratios=[0.35, 1, 1, 1, 1, 1],  # label column thinner
-        wspace=0.05, hspace=0.1
-    )
-
-    fig.suptitle(property_key, fontsize=18)
-    plt.rcParams['axes.labelsize'] = 14
-    
-    angle_titles = ["0–30°", "30–45°", "45–60°", "60–75°", "75–90°"]
-    extent = [xedg[0], xedg[-1], yedg[0], yedg[-1]]
-    # -------------------------------
-    # MAKE AXES FOR THE 1×5 PANELS
-    # -------------------------------
-    
-    axs = []     
-    for c in range(5):
-        ax = fig.add_subplot(gs[c + 1])
-        axs.append(ax)
-
-    # -------------------------------
-    # COLORMAP
-    # -------------------------------
-    
-    #cmap = (matplotlib.colors.ListedColormap(['darkblue', 'lightblue', 'white', 'palevioletred', 'brown']).with_extremes(under='darkblue', over='brown'))
-    cmap = matplotlib.colormaps['RdBu_r'].resampled(5)
-    bounds = [-3, -2, -1, 1, 2, 3]
-    norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
-
-    # cmap_obs = (matplotlib.colors.ListedColormap(['lightgrey','lightgrey', 'lightgrey']))
-    # bounds_obs = [0,10,20,50]
-    # norm_obs = matplotlib.colors.BoundaryNorm(bounds_obs, cmap_obs.N)
-
-    cmap_obs = (matplotlib.colors.ListedColormap(['black', 'grey', 'white', 'palevioletred', 'brown']).with_extremes(under='darkblue', over='brown'))
-    bounds_obs = [0, 1, 2, 3, 4, 5]
-    norm_obs = matplotlib.colors.BoundaryNorm(bounds_obs, cmap_obs.N)
-
-    #plt.rc('image', cmap=cmap_obs)
-    # -------------------------------
-    # PLOT ALL PANELS
-    # -------------------------------
-
-    for col in range(5):    # angle class
-        
-        title = angle_titles[col]
-        ax = axs[col]
-        ax.fill([0 , 20, 20, 0], [20, 20, -20, -20], "lightgrey", zorder=0)
-        # Draw contour, magnetopause
-        draw_background(ax, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
-                        X_shue, R_shue)
-
-        # Histogram for this cell
-        hist = ca_blocks[col]
-        obs = hist_blocks[col]
-        
-        angle_line = cone_angle_line(fitting_coeffs, title)
-        ax.imshow(obs, interpolation='none', origin='lower',
-               extent=extent, cmap=cmap_obs, norm=norm_obs)
-        draw_heatmap(ax, hist, extent, cmap, norm, angle_line)
-            
-        mask_inside_magnetopause(ax, X_shue, R_shue)
-            
-        # redraw magnetopause boundary so it stays crisp
-        ax.plot(X_shue, R_shue, 'k', linewidth=1)
-        set_limits(ax)
-
-        # Labels
-        ax.set_title(rf'$\alpha$ = {title}', fontsize=12)
-        ax.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
-        if col == 0:
-            ax.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
-            
-
-    # -------------------------------
-    # COLORBAR
-    # -------------------------------
-
-    from matplotlib.cm import ScalarMappable
-
-    # --- Scalar mappables (independent of any single subplot image)
-    sm_power = ScalarMappable(cmap=cmap, norm=norm)
-    sm_power.set_array([])
-
-    cbar1 = fig.colorbar(
-        sm_power,
-        ax=axs[4],
-        location='right',
-        pad=0.02,
-        spacing='proportional',
-        extend='both'
-    )
-    
-    cbar1.set_label('Error/Resolution')
-
-    path = "/Users/roseatkinson/Documents/New_Figs/CA_" + property_key + ".png"
-    plt.savefig(path)
-
-
 
 #location map
 
-def locationmapping(location_list, location_refs):
+def location_mapping(location_list, location_refs):
     """Unpack all points in location list as x,y lists and plot"""
     X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
 
@@ -1278,4 +1173,139 @@ def locationmapping(location_list, location_refs):
     axsLeft.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
 
     path = "/Users/roseatkinson/Documents/New_Figs/AlphaCaseStudies.png"
+    plt.savefig(path)
+
+
+    
+###############################################################################
+
+def CA_binned_plot(property_key, ca_dict, **other_data):
+    """1 x n cone angle grid mapping with dictionary inputs, optional background"""
+
+    xedg = range(20)
+    yedg = range(-20, 20)
+
+    #find constants for Merka & Shue
+    X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
+
+    no_cols = len(ca_dict)
+    fig_width = 1.5*len(ca_dict)
+
+    fig = plt.figure(figsize=(fig_width, 2.5), dpi=300, constrained_layout=True)
+    gs = fig.add_gridspec(
+        nrows=1, ncols=no_cols,     
+        wspace=0.05, hspace=0.1
+    )
+
+    fig.suptitle(property_key, fontsize=18)
+    plt.rcParams['axes.labelsize'] = 14
+    
+    angle_titles = {"rad":"0–30°", "lowspir":"30–45°", "highspir":"45–60°", "lowperp":"60–75°", "highperp":"75–90°"}
+    extent = [xedg[0], xedg[-1], yedg[0], yedg[-1]]
+    # -------------------------------
+    # MAKE AXES FOR THE 1×5 PANELS
+    # -------------------------------
+    
+    axs = []     
+    for c in range(len(ca_dict)):
+        ax = fig.add_subplot(gs[c])
+        axs.append(ax)
+
+    # -------------------------------
+    # COLORMAP
+    # -------------------------------
+
+    if 'cbar_type' in other_data:
+        if other_data['cbar_type']== 'Linear_Disc':
+            cmap = matplotlib.colormaps['Reds'].resampled(5)
+            bounds = [1, 2, 3, 4, 5, 6]
+            norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+    else:
+        cmap = matplotlib.colormaps['RdBu_r'].resampled(5)
+        bounds = [-3, -2, -1, 1, 2, 3]
+        norm = matplotlib.colors.BoundaryNorm(bounds, cmap.N)
+
+    #for background:
+    cmap_obs = (matplotlib.colors.ListedColormap(['black', 'grey', 'white', 'palevioletred', 'brown']).with_extremes(under='darkblue', over='brown'))
+    bounds_obs = [0, 1, 2, 3, 4, 5]
+    norm_obs = matplotlib.colors.BoundaryNorm(bounds_obs, cmap_obs.N)
+
+    # -------------------------------
+    # PLOT ALL PANELS
+    # -------------------------------
+
+    col = 0
+    
+    for group_name, subsets in ca_dict.items():    # angle class
+        
+        title = angle_titles[group_name]
+        ax = axs[col]
+
+        if 'background' in other_data:
+            ax.fill([0 , 20, 20, 0], [20, 20, -20, -20], "lightgrey", zorder=0)
+        
+        # Draw contour, magnetopause
+        draw_background(ax, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
+                        X_shue, R_shue)
+
+        # Histogram for this cell
+        hist = ca_dict[group_name][property_key]
+        
+        
+        angle_line = cone_angle_line(fitting_coeffs, title)
+
+        if 'background' in other_data:
+            background_dict = other_data['background']
+            obs = background_dict[group_name]
+            ax.imshow(obs, interpolation='none', origin='lower',
+                   extent=extent, cmap=cmap_obs, norm=norm_obs)
+        
+        draw_heatmap(ax, hist, extent, cmap, norm, angle_line)
+            
+        mask_inside_magnetopause(ax, X_shue, R_shue)
+            
+        # redraw magnetopause boundary so it stays crisp
+        ax.plot(X_shue, R_shue, 'k', linewidth=1)
+        set_limits(ax)
+
+        # Labels
+        ax.set_title(rf'$\alpha$ = {title}', fontsize=12)
+        ax.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+        if col == 0:
+            ax.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+            
+        col+=1   
+
+    # -------------------------------
+    # COLORBAR
+    # -------------------------------
+
+    from matplotlib.cm import ScalarMappable
+
+    # --- Scalar mappables (independent of any single subplot image)
+    sm_power = ScalarMappable(cmap=cmap, norm=norm)
+    sm_power.set_array([])
+
+    cbar1 = fig.colorbar(
+        sm_power,
+        ax=axs[4],
+        location='right',
+        pad=0.1,
+        spacing='proportional',
+        extend='both'
+    )
+
+    cbar_labels = {'Transverse Power':'Normalised Power', 'Compressive Power':'Normalised Power', 'Compressibility':'Compressibility', 'Compressive Frequency': 'Peak Frequency, mHz', 'Transverse Frequency': 'Peak Frequency, mHz', 'Ellipticity': 'Ellipticity', 'Takahashi Transverse Error/Resolution':'Error/Resolution', 'Takahashi Compressive Error/Resolution':'Error/Resolution', 'Heilig Transverse Error/Resolution':'Error/Resolution', 'Takahashi Transverse Error': 'Fractional Error', 'Takahashi Compressive Error': 'Fractional Error', 'Heilig Transverse Error': 'Fractional Error', 'Takahashi Transverse Error/Std Dev': 'Error/std dev', 'Takahashi Compressive Error/Std Dev': 'Error/std dev', 'Heilig Transverse Error/Std Dev': 'Error/std dev', 'Heilig Compressive Error/Std Dev': 'Error/std dev'}
+
+    if property_key in cbar_labels:
+        cbar1.set_label(cbar_labels[property_key])
+    else:
+        cbar1.set_label('?')
+        
+    if '/' in property_key:
+        filename = property_key.replace('/', ' over ')
+    else:
+        filename = property_key
+
+    path = "/Users/roseatkinson/Documents/New_Figs/" + filename + "_SWFilt.png"
     plt.savefig(path)
