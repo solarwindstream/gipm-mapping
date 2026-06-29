@@ -202,7 +202,7 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
     fig.suptitle(property_key, fontsize=18)
     plt.rcParams['axes.labelsize'] = 14
 
-    col_list = ["0–30°", "30–45°", "45–60°", "60–75°", "75–90°"]
+    col_list = ["rad", "lowspir", "highspir", "lowperp", "highperp"]
     row_list = ['10_15', '5_10', 'ratio']
 
     # Row labels (top row → bottom row)
@@ -292,8 +292,9 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
     if metric=='std':
         cmap_dict = {"Peak Transverse Frequency": [0.007, 0.1], "Peak Compressive Frequency": [0.007, 0.1], "Ellipticity": [1,4], "Normalised Transverse Frequency": [0.001, 0.1], "Normalised Compressive Frequency": [0.001, 0.1]}
 
-
-
+    if property_key=='Compressibility':
+        powercmp = 'viridis'
+        power_norm = colors.LogNorm(vmin=0.1, vmax=1)
     if property_key=='Ellipticity':
         powercmp = cm_cram.navia
         power_norm = colors.Normalize(vmin=cmap_dict[property_key][0], vmax=cmap_dict[property_key][1])
@@ -304,7 +305,8 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
     else:
         powercmp = 'magma'
         power_norm = colors.LogNorm(vmin=0.001, vmax=0.1)
-    ratio_cmp = 'RdBu_r'
+        
+    comparison_cmp = 'RdBu_r'
     ratio_norm = colors.LogNorm(vmin=0.1, vmax=10)
         
     #comparison_cmp = cm_cram.vik
@@ -320,9 +322,7 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
     for col in range(5):    # angle class
 
         col_name = col_list[col]
-        title = angle_titles[col_name]
-        
-        #heatmaps_dict['ratio'][subset_name][property_name]
+        title = angle_titles[col]
         
         for row in range(3):                     # mach no. class
             
@@ -334,7 +334,7 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
 
             # Histogram for this cell
             row_name = row_list[row]
-            hist = ma_ca_blocks[row_name][col]
+            hist = ma_ca_dict[row_name][col_name][property_key]
             
             angle_line = cone_angle_line(fitting_coeffs, title)
             
