@@ -88,27 +88,72 @@ def cone_angle_line(fitting_coeffs, angle_key):
         "30-52.5°": np.tan(np.deg2rad(41.25)),
         "52.5-75°": np.tan(np.deg2rad(63.75)),
     }
+
+    tangent_start = {
+        "30–45°": [2.5, 20],
+        "45–60°": [3, 20],
+        "60–75°": [6, 20],
+        "75–90°": [10.2, 20],
+        "30-52.5°": [2.6, 20],
+        "52.5-75°": [5.2, 20],
+    }
+    
     # Bow shock intercept
-    inter_med = fitting_coeffs[6]**2 - (fitting_coeffs[0]*fitting_coeffs[9])
-    x_s = (-fitting_coeffs[6] + np.sqrt(inter_med)) / fitting_coeffs[0]
-    x_e = 30
-    y_s = 0
-    slope = line_slopes[angle_key]
-    y_e = -x_e * slope
+
+    if angle_key != "75–90°":
+        inter_med = fitting_coeffs[6]**2 - (fitting_coeffs[0]*fitting_coeffs[9])
+        x_s = (-fitting_coeffs[6] + np.sqrt(inter_med)) / fitting_coeffs[0]
+        x_e = 30
+        y_s = 0
+        slope = line_slopes[angle_key]
+        y_e = -(x_e-x_s) * slope
+    
+    else:
+        #hiding the angle line for the high angle case as it is only slightly offset from the tangent line
+        x_s = 0
+        x_e = 0
+        y_s = 0
+        x_diff = x_e-x_s
+        slope = line_slopes[angle_key]
+        y_e = (-x_diff * slope) +  y_s
+
+    #tangent with same angle (if alpha >30):
+    if angle_key != "0–30°":
+        x_t_s = tangent_start[angle_key][0]
+        x_t_e = 30
+        y_t_s = tangent_start[angle_key][1]
+        x_diff = x_t_e-x_t_s
+        slope = line_slopes[angle_key]
+        y_t_e = (-x_diff * slope) +  y_t_s
+
+    else:
+        x_t_s = 0
+        x_t_e = 0
+        y_t_s = 0
+        x_diff = x_t_e-x_t_s
+        slope = line_slopes[angle_key]
+        y_t_e = (-x_diff * slope) +  y_t_s
+        
+    
     # angle line parameters: (x_s, x_e, y_s, y_e)
     angle_line = (x_s, x_e, y_s, y_e)
-    return(angle_line)
+    tangent_angle_line = (x_t_s, x_t_e, y_t_s, y_t_e)
+    
+    return(angle_line, tangent_angle_line)
 
 
-def draw_hist(ax, hist, extent, cmap, v_bounds, angle_line):
+def draw_hist(ax, hist, extent, cmap, v_bounds, angle_line, tangent_angle_line):
     """Draw heatmap + cone angle line. v_bounds is list taking lower, upper values in order."""
     ax.imshow(hist, interpolation='none', origin='lower',
               extent=extent, cmap=cmap, vmin=v_bounds[0], vmax=v_bounds[1])  
 
     x_s, x_e, y_s, y_e = angle_line
+    x_t_s, x_t_e, y_t_s, y_t_e = tangent_angle_line
     ax.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
+    ax.plot([x_t_s, x_t_e], [y_t_s, y_t_e], color='k', linewidth=1)
 
-def draw_heatmap(ax, hist, extent, cmap, cmap_norm, angle_line, **details):
+    
+def draw_heatmap(ax, hist, extent, cmap, cmap_norm, angle_line, tangent_angle_line, **details):
     if 'alpha' in details:
         set_a = details['alpha']
     else:
@@ -118,7 +163,9 @@ def draw_heatmap(ax, hist, extent, cmap, cmap_norm, angle_line, **details):
               extent=extent, cmap=cmap, norm=cmap_norm, alpha=set_a)
     
     x_s, x_e, y_s, y_e = angle_line
+    x_t_s, x_t_e, y_t_s, y_t_e = tangent_angle_line
     ax.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
+    ax.plot([x_t_s, x_t_e], [y_t_s, y_t_e], color='k', linewidth=1)
 
 def set_limits(ax):
     ax.set_xlim(0, 20)
@@ -169,6 +216,40 @@ def mask_inside_magnetopause(ax, x_shue, r_shue):
     ax.fill(poly_x, poly_y, color='white')
 
 
+def sample_indicators_alt(ax):
+        
+    #add in ratio indicator boxes 
+
+    #FORESHOCK
+    ax.hlines([-11, -13], 11, 13, color='k', linewidth=1)
+    ax.vlines([11, 13], -11, -13, color='k', linewidth=1)
+
+    #SOLAR WIND
+    ax.hlines([11, 13], 11, 13, color='k', linewidth=1)
+    ax.vlines([11, 13], 11, 13, color='k', linewidth=1)
+
+def sample_indicators(ax):
+        
+    #add in ratio indicator boxes 
+
+    #FORESHOCK
+    ax.hlines([-11, -13], 10, 12, color='k', linewidth=1)
+    ax.vlines([10, 12], -11, -13, color='k', linewidth=1)
+
+    #SOLAR WIND
+    ax.hlines([11, 13], 10, 12, color='k', linewidth=1)
+    ax.vlines([10, 12], 11, 13, color='k', linewidth=1)
+
+    #QPARA M'SHEATH
+
+    ax.hlines([-11, -13], 6, 8, color='k', linewidth=1)
+    ax.vlines([6, 8], -11, -13, color='k', linewidth=1)
+
+    #QPERP M'SHEATH
+
+    ax.hlines([11, 13], 6, 8, color='k', linewidth=1)
+    ax.vlines([6, 8], 11, 13, color='k', linewidth=1)
+    
 ######PRODUCING PLOTS!!!
 
 def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
@@ -187,10 +268,10 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
     #main cbar titles:
 
     if metric=='mean':
-        cbar_titles = {"Peak Transverse Frequency": "Frequency, mHz", "Peak Compressive Frequency": "Frequency, mHz", "Ellipticity": "Ellipticity", "Normalised Transverse Frequency": "Normalised Frequency, Hz/nT", "Normalised Compressive Frequency": "Normalised Frequency, Hz/nT", "Normalised Transverse Power": "Normalised Power", "Normalised Compressive Power": "Normalised Power"}
+        cbar_titles = {"Peak Transverse Frequency": "Frequency, mHz", "Peak Compressive Frequency": "Frequency, mHz", "Ellipticity": "Ellipticity", "Normalised Transverse Frequency": "Normalised Frequency, Hz/nT", "Normalised Compressive Frequency": "Normalised Frequency, Hz/nT", "Normalised Transverse Power": "Normalised Power", "Normalised Compressive Power": "Normalised Power", "Compressibility":"Compressibility"}
 
     if metric=='std':
-        cbar_titles = {"Peak Transverse Frequency": "Std Dev, mHz", "Peak Compressive Frequency": "Std Dev, mHz", "Ellipticity": "Std Dev", "Normalised Transverse Frequency": "Std Dev Hz/nT", "Normalised Compressive Frequency": "Std Dev, Hz/nT", "Normalised Transverse Power": "Std Dev", "Normalised Compressive Power": "Std Dev"}
+        cbar_titles = {"Peak Transverse Frequency": "Std Dev, mHz", "Peak Compressive Frequency": "Std Dev, mHz", "Ellipticity": "Std Dev", "Normalised Transverse Frequency": "Std Dev Hz/nT", "Normalised Compressive Frequency": "Std Dev, Hz/nT", "Normalised Transverse Power": "Std Dev", "Normalised Compressive Power": "Std Dev", "Compressibility":"Compressibility"}
         
     fig = plt.figure(figsize=(9, 8), dpi=300, constrained_layout=True)
     gs = fig.add_gridspec(
@@ -203,7 +284,7 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
     plt.rcParams['axes.labelsize'] = 14
 
     col_list = ["rad", "lowspir", "highspir", "lowperp", "highperp"]
-    row_list = ['10_15', '5_10', 'ratio']
+    row_list = ['10_15', '5_10', 'Ratio']
 
     # Row labels (top row → bottom row)
     row_labels = [
@@ -292,7 +373,7 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
     if metric=='std':
         cmap_dict = {"Peak Transverse Frequency": [0.007, 0.1], "Peak Compressive Frequency": [0.007, 0.1], "Ellipticity": [1,4], "Normalised Transverse Frequency": [0.001, 0.1], "Normalised Compressive Frequency": [0.001, 0.1]}
 
-    if property_key=='Compressibility':
+    if property_key=="Compressibility":
         powercmp = 'viridis'
         power_norm = colors.LogNorm(vmin=0.1, vmax=1)
     if property_key=='Ellipticity':
@@ -302,7 +383,7 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
         powercmp = cm_cram.lipari
         powercmp.set_under(powercmp(0))
         power_norm = colors.LogNorm(vmin=cmap_dict[property_key][0], vmax=cmap_dict[property_key][1])
-    else:
+    if property_key in ["Normalised Transverse Power", "Normalised Compressive Power"]:
         powercmp = 'magma'
         power_norm = colors.LogNorm(vmin=0.001, vmax=0.1)
         
@@ -310,7 +391,7 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
     ratio_norm = colors.LogNorm(vmin=0.1, vmax=10)
         
     #comparison_cmp = cm_cram.vik
-    if comparison_key == "ratio":
+    if comparison_key == "Ratio":
         comparison_norm = colors.LogNorm(vmin=0.1, vmax=10)
     else:
         comparison_norm = colors.LogNorm(vmin=0.1, vmax=10)
@@ -336,13 +417,13 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
             row_name = row_list[row]
             hist = ma_ca_dict[row_name][col_name][property_key]
             
-            angle_line = cone_angle_line(fitting_coeffs, title)
+            angle_line, tangent_angle_line = cone_angle_line(fitting_coeffs, title)
             
             if row < 2:
-                draw_heatmap(ax, hist, extent, powercmp, power_norm, angle_line)
+                draw_heatmap(ax, hist, extent, powercmp, power_norm, angle_line, tangent_angle_line)
 
             if row == 2:
-                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line)
+                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line, tangent_angle_line)
                 
             mask_inside_magnetopause(ax, X_shue, R_shue)
             
@@ -405,16 +486,16 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
 
     path = "/Users/roseatkinson/Documents/New_Figs/MA_CA_" + property_key + comparison_key + ".png"
     plt.savefig(path)
-    #Save Plots!!
 
 
-##################
-##################
-##################
+###########################################################################
+###########################################################################
+
+    
 #Wider CA bin plot, with transverse & compressive in same batch
 
-def NaNp_heatmap_plot(property_key, nanp_ca_blocks, xedg, yedg):
-    """Plot 3 x 4 graph to show wave power"""
+def wider_binned_plot(property_key, filter_key, p_ca_dict, p_lims):
+    """Plot 3 x 4 graph to show compressive and transverse property for wider bins"""
     #properties are either PEAK FREQUENCY or NORMALISED FREQUENCY
     #new angle titles!
     
@@ -422,28 +503,48 @@ def NaNp_heatmap_plot(property_key, nanp_ca_blocks, xedg, yedg):
     X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
 
     angle_titles_wide = ["30-52.5°", "52.5-75°", "30-52.5°", "52.5-75°"]
-    cbar_titles = {"Peak Frequency": "Frequency, mHz", "Normalised Frequency": "Normalised Frequency, Hz/nT"}
+    cbar_titles = {"Peak Frequency": "Frequency, mHz", "Normalised Power": "Normalised Power"}
+    fig_titles = {"MA":"Mach Number", "B":"IMF Magnitude", "V":"Solar Wind Speed", "np":"Solar Wind Density", "nanp":"Alpha/Proton Ratio"}
+
+    xedg = range(20)
+    yedg = range(-20, 20)
+    
     extent = [xedg[0], xedg[-1], yedg[0], yedg[-1]]
+
+    
     # -------------------------------
     # CREATE FIGURE + GRID
     # -------------------------------
     
-    fig = plt.figure(figsize=(9, 8), dpi=300, constrained_layout=True)
+    fig = plt.figure(figsize=(9, 9), dpi=300, constrained_layout=True)
     gs = fig.add_gridspec(
         nrows=3, ncols=5,      # 1 column for patch labels
         width_ratios=[0.35, 1, 1, 1, 1],  # label column thinner
         wspace=0.05, hspace=0.1
     )
     
-    fig.suptitle("Effect of Alpha/Proton Ratio", fontsize=18)
+    fig.suptitle(f"Effect of {fig_titles[filter_key]}", fontsize=18, y=1.08)
     plt.rcParams['axes.labelsize'] = 14
+
+    row_dict = {"MA":r"A_{\mathrm{A}}", "B":r"B_{\mathrm{IMF}}", "V":r"V_{\mathrm{SW}}", "np": r"n_p", "nanp": r"N_a/N_p"}
+    units_dict = {"MA":"", "B":r"\mathrm{nT}", "V": r"\mathrm{km\,s^{-1}}", "np":r"\mathrm{cc^{-1}}", "nanp": ""}
+
+    if filter_key != 'MA':
+        # Row labels (top row → bottom row)
+        row_labels = [
+            f'${p_lims[1]}{units_dict[filter_key]} \leq {row_dict[filter_key]}$',
+            f'${row_dict[filter_key]} < {p_lims[0]}{units_dict[filter_key]}$',
+            r'Ratio'
+        ]
+
+    if filter_key == 'MA':
+        # Row labels (top row → bottom row)
+        row_labels = [
+            f'${p_lims[2]}{units_dict[filter_key]} \leq {row_dict[filter_key]} < {p_lims[3]}{units_dict[filter_key]}$',
+            f'${p_lims[0]}{units_dict[filter_key]} \leq {row_dict[filter_key]} < {p_lims[1]}{units_dict[filter_key]}$',
+            r'Ratio'
+        ]
     
-    # Row labels (top row → bottom row)
-    row_labels = [
-        r'$0.035 \leq N_a/N_p$',
-        r'$N_a/N_p < 0.025$',
-        r'Ratio'
-    ]
     # Line slopes for different angle classes
     line_slopes = {
         "0–30°": np.tan(np.deg2rad(15)),
@@ -455,6 +556,20 @@ def NaNp_heatmap_plot(property_key, nanp_ca_blocks, xedg, yedg):
         "52.5-75°": np.tan(np.deg2rad(63.75)),
     }
 
+    row_list = []
+    col_list = ["30-52.5°", "52.5-75°", "30-52.5°", "52.5-75°"]
+
+    for group_name, subsets in p_ca_dict.items():
+        row_list.append(group_name)
+
+    if property_key== "Normalised Power":
+        trans_type = 'Normalised Transverse Power'
+        comp_type = 'Normalised Compressive Power'
+
+    if property_key=="Peak Frequency":
+        trans_type = 'Transverse Frequency'
+        comp_type = 'Compressive Frequency'
+        
     # -------------------------------
     # MAKE AXES FOR THE 3×5 PANELS
     # -------------------------------
@@ -527,13 +642,17 @@ def NaNp_heatmap_plot(property_key, nanp_ca_blocks, xedg, yedg):
     # COLORMAP
     # -------------------------------
 
-    cmap_dict = {"Peak Frequency": [0.007, 0.1], "Normalised Frequency": [0.001, 0.1]}
 
-    powercmp = cm_cram.lipari
-    #powercmp.set_under(powercmp(0))
-    power_norm = colors.LogNorm(vmin=cmap_dict[property_key][0], vmax=cmap_dict[property_key][1])
+    if property_key=='Peak Frequency':
+        propcmp = cm_cram.lipari
+        prop_norm = colors.LogNorm(vmin=0.007, vmax=0.1)
+        #comparison_cmp = cm_cram.vik
+        #comparison_norm = colors.LogNorm(vmin=0.1, vmax=10)
+    else:
+        propcmp = 'magma'
+        prop_norm = colors.LogNorm(vmin=0.001, vmax=0.1)
 
-    comparison_cmp = cm_cram.vik
+    comparison_cmp = 'RdBu_r'
     comparison_norm = colors.LogNorm(vmin=0.1, vmax=10)
     
     # -------------------------------
@@ -541,7 +660,8 @@ def NaNp_heatmap_plot(property_key, nanp_ca_blocks, xedg, yedg):
     # -------------------------------
     
     for col in range(4):                         # angle class
-        title = angle_titles_wide[col]
+        col_name = col_list[col]
+        title = col_name
         slope = line_slopes[title]
     
         for row in range(3):                     # mach no. class
@@ -552,16 +672,25 @@ def NaNp_heatmap_plot(property_key, nanp_ca_blocks, xedg, yedg):
                             X_shue, R_shue)
     
             # Histogram for this cell
-            hist = nanp_ca_blocks[row][col]
-    
+            row_name = row_list[row]
+
+            #transverse
+            if col < 2:
+                hist = p_ca_dict[row_name][col_name][trans_type]
+
+            #compressive
+
+            if col >= 2:
+                hist = p_ca_dict[row_name][col_name][comp_type]
+            
             # angle line parameters: (x_s, x_e, y_s, y_e)
-            angle_line = cone_angle_line(fitting_coeffs, title)
+            angle_line, tangent_angle_line = cone_angle_line(fitting_coeffs, title)
     
             if row < 2:
-                draw_heatmap(ax, hist, extent, powercmp, power_norm, angle_line)
+                draw_heatmap(ax, hist, extent, propcmp, prop_norm, angle_line, tangent_angle_line)
     
             if row == 2:
-                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line)
+                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line, tangent_angle_line)
     
             mask_inside_magnetopause(ax, X_shue, R_shue)
             
@@ -578,425 +707,6 @@ def NaNp_heatmap_plot(property_key, nanp_ca_blocks, xedg, yedg):
             if row == 2:
                 ax.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
     
-    # -------------------------------
-    # COLORBARS (TWO SEPARATE ON RIGHT)
-    # -------------------------------
-    
-    from matplotlib.cm import ScalarMappable
-    
-    # --- Scalar mappables (independent of any single subplot image)
-    sm_power = ScalarMappable(norm=power_norm, cmap=powercmp)
-    sm_power.set_array([])
-    
-    sm_ratio = ScalarMappable(norm=comparison_norm, cmap=comparison_cmp)
-    sm_ratio.set_array([])
-    
-    # --- Top two rows colourbar (wave power)
-    top_axes = axs[0] + axs[1]   # flatten row 0 and 1
-    cbar1 = fig.colorbar(
-        sm_power,
-        ax=top_axes,
-        location='right',
-        pad=0.02,
-        extend='both'
-    )
-    cbar1.set_label(cbar_titles[property_key])
-    
-    # --- Bottom row colourbar (ratio)
-    bottom_axes = axs[2]
-    cbar2 = fig.colorbar(
-        sm_ratio,
-        ax=bottom_axes,
-        location='right',
-        aspect=10,
-        pad=0.02,
-        extend='both'
-    )
-    cbar2.set_label('Ratio')
-    
-    cbar1.ax.yaxis.set_major_formatter(ticker.LogFormatterMathtext())
-    cbar2.ax.yaxis.set_major_formatter(ticker.LogFormatterMathtext())
-
-    path = "/Users/roseatkinson/Documents/New_Figs/CA_NaNp" + property_key +".png"
-    plt.savefig(path)
-
-##################
-##################
-##################
-#Wider CA bin plot, with transverse & compressive in same batch
-
-def NaNp_heatmap_plot(property_key, nanp_ca_blocks, xedg, yedg, NaNp_lims):
-    """Plot 3 x 4 graph to show wave power"""
-    #properties are either PEAK FREQUENCY or NORMALISED FREQUENCY
-    #new angle titles!
-    
-    #find constants for Merka & Shue
-    X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
-
-    angle_titles_wide = ["30-52.5°", "52.5-75°", "30-52.5°", "52.5-75°"]
-    cbar_titles = {"Peak Frequency": "Frequency, mHz", "Normalised Frequency": "Normalised Frequency, Hz/nT"}
-    extent = [xedg[0], xedg[-1], yedg[0], yedg[-1]]
-    # -------------------------------
-    # CREATE FIGURE + GRID
-    # -------------------------------
-    
-    fig = plt.figure(figsize=(9, 8), dpi=300, constrained_layout=True)
-    gs = fig.add_gridspec(
-        nrows=3, ncols=5,      # 1 column for patch labels
-        width_ratios=[0.35, 1, 1, 1, 1],  # label column thinner
-        wspace=0.05, hspace=0.1
-    )
-    
-    fig.suptitle("Effect of Alpha/Proton Ratio", fontsize=18)
-    plt.rcParams['axes.labelsize'] = 14
-    
-    # Row labels (top row → bottom row)
-    row_labels = [
-        NaNp_lims[1] + r'$ \leq N_a/N_p$',
-        r'$N_a/N_p < $' + NaNp_lims[0],
-        r'Ratio'
-    ]
-    # Line slopes for different angle classes
-    line_slopes = {
-        "0–30°": np.tan(np.deg2rad(15)),
-        "30–45°": np.tan(np.deg2rad(37.5)),
-        "45–60°": np.tan(np.deg2rad(52.5)),
-        "60–75°": np.tan(np.deg2rad(67.5)),
-        "75–90°": np.tan(np.deg2rad(82.5)),
-        "30-52.5°": np.tan(np.deg2rad(41.25)),
-        "52.5-75°": np.tan(np.deg2rad(63.75)),
-    }
-
-    # -------------------------------
-    # MAKE AXES FOR THE 3×5 PANELS
-    # -------------------------------
-    axs = []
-    for r in range(3):
-        plot_row_axes = []
-        gs_row = r      
-        for c in range(4):
-            ax = fig.add_subplot(gs[gs_row, c + 1])
-            plot_row_axes.append(ax)
-        axs.append(plot_row_axes)
-    
-    # -------------------------------
-    # Patch Labels (Rounded Boxes)
-    # -------------------------------
-    
-    for r in range(3):
-        ax_patch = fig.add_subplot(gs[r, 0])
-        ax_patch.set_axis_off()
-    
-        # -- Draw text first so we can query its bounding box --
-        txt = ax_patch.text(
-            0.5, 0.5,                     # centered in the Axes
-            row_labels[r],
-            ha="center",
-            va="center",
-            fontsize=12,
-            transform=ax_patch.transAxes,
-            rotation='vertical'
-        )
-    
-        fig.canvas.draw()  # required to obtain correct text bounding box
-    
-        # -- Convert text bounding box from display to Axes coordinates --
-        renderer = fig.canvas.get_renderer()
-        bbox = txt.get_window_extent(renderer=renderer)
-        bbox_axes = TransformedBbox(
-            bbox, ax_patch.transAxes.inverted()
-        )
-    
-        # Add some padding around the text
-        pad_x = 0.04   # fractional padding in axes coordinates
-        pad_y = 0.01
-    
-        x0 = bbox_axes.x0 - pad_x
-        y0 = bbox_axes.y0 - pad_y
-        width = bbox_axes.width + 2 * pad_x
-        height = bbox_axes.height + 2 * pad_y
-    
-        # -- Rounded box placed behind the text --
-        box = FancyBboxPatch(
-            (x0, y0),
-            width,
-            height,
-            boxstyle="round,pad=0.2,rounding_size=0.06",
-            fc="lightgrey",
-            ec="dimgrey",
-            linewidth=1,
-            mutation_aspect=1,
-            transform=ax_patch.transAxes,
-            zorder=0.5,
-        )
-        ax_patch.add_patch(box)
-    
-        # Move text above box
-        txt.set_zorder(1)
-    
-    
-    # -------------------------------
-    # COLORMAP
-    # -------------------------------
-
-    cmap_dict = {"Peak Frequency": [0.007, 0.1], "Normalised Frequency": [0.001, 0.1]}
-
-    powercmp = cm_cram.lipari
-    #powercmp.set_under(powercmp(0))
-    power_norm = colors.LogNorm(vmin=cmap_dict[property_key][0], vmax=cmap_dict[property_key][1])
-
-    comparison_cmp = cm_cram.vik
-    comparison_norm = colors.LogNorm(vmin=0.1, vmax=10)
-    
-    # -------------------------------
-    # PLOT ALL PANELS
-    # -------------------------------
-    
-    for col in range(4):                         # angle class
-        title = angle_titles_wide[col]
-        slope = line_slopes[title]
-    
-        for row in range(3):                     # mach no. class
-            ax = axs[row][col]
-    
-            # Draw contour, magnetopause
-            draw_background(ax, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
-                            X_shue, R_shue)
-    
-            # Histogram for this cell
-            hist = nanp_ca_blocks[row][col]
-    
-            # angle line parameters: (x_s, x_e, y_s, y_e)
-            angle_line = cone_angle_line(fitting_coeffs, title)
-    
-            if row < 2:
-                draw_heatmap(ax, hist, extent, powercmp, power_norm, angle_line)
-    
-            if row == 2:
-                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line)
-    
-            mask_inside_magnetopause(ax, X_shue, R_shue)
-            
-            # redraw magnetopause boundary so it stays crisp
-            ax.plot(X_shue, R_shue, 'k', linewidth=1)
-            
-            set_limits(ax)
-            
-            # Labels
-            if col == 0:
-                ax.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
-            if row == 0:
-                ax.set_title(rf'$\alpha$ = {title}', fontsize=12)
-            if row == 2:
-                ax.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
-    
-    # -------------------------------
-    # COLORBARS (TWO SEPARATE ON RIGHT)
-    # -------------------------------
-    
-    from matplotlib.cm import ScalarMappable
-    
-    # --- Scalar mappables (independent of any single subplot image)
-    sm_power = ScalarMappable(norm=power_norm, cmap=powercmp)
-    sm_power.set_array([])
-    
-    sm_ratio = ScalarMappable(norm=comparison_norm, cmap=comparison_cmp)
-    sm_ratio.set_array([])
-    
-    # --- Top two rows colourbar (wave power)
-    top_axes = axs[0] + axs[1]   # flatten row 0 and 1
-    cbar1 = fig.colorbar(
-        sm_power,
-        ax=top_axes,
-        location='right',
-        pad=0.02,
-        extend='both'
-    )
-    cbar1.set_label(cbar_titles[property_key])
-    
-    # --- Bottom row colourbar (ratio)
-    bottom_axes = axs[2]
-    cbar2 = fig.colorbar(
-        sm_ratio,
-        ax=bottom_axes,
-        location='right',
-        aspect=10,
-        pad=0.02,
-        extend='both'
-    )
-    cbar2.set_label('Ratio')
-    
-    cbar1.ax.yaxis.set_major_formatter(ticker.LogFormatterMathtext())
-    cbar2.ax.yaxis.set_major_formatter(ticker.LogFormatterMathtext())
-
-    path = "/Users/roseatkinson/Documents/New_Figs/CA_NaNp" + property_key + "lims_" + NaNp_lims[0] + NaNp_lims[1] +".png"
-    plt.savefig(path)
-
-def NaNp_heatmap_plot_B_filt(property_key, nanp_ca_blocks, xedg, yedg, NaNp_lims):
-    """Plot 3 x 4 graph to show wave power"""
-    #properties are either PEAK FREQUENCY or NORMALISED FREQUENCY
-    #new angle titles!
-    
-    #find constants for Merka & Shue
-    X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
-
-    angle_titles_wide = ["30-52.5°", "52.5-75°", "30-52.5°", "52.5-75°"]
-    cbar_titles = {"Peak Frequency": "Frequency, mHz", "Normalised Frequency": "Normalised Frequency, Hz/nT"}
-    extent = [xedg[0], xedg[-1], yedg[0], yedg[-1]]
-    # -------------------------------
-    # CREATE FIGURE + GRID
-    # -------------------------------
-    
-    fig = plt.figure(figsize=(9, 8), dpi=300, constrained_layout=True)
-    gs = fig.add_gridspec(
-        nrows=3, ncols=5,      # 1 column for patch labels
-        width_ratios=[0.35, 1, 1, 1, 1],  # label column thinner
-        wspace=0.05, hspace=0.1
-    )
-    
-    fig.suptitle("Effect of Alpha/Proton Ratio, Constant B", fontsize=18, y=1.08)
-    plt.rcParams['axes.labelsize'] = 14
-    
-    # Row labels (top row → bottom row)
-    row_labels = [
-        NaNp_lims[1] + r'$ \leq N_a/N_p$',
-        r'$N_a/N_p < $' + NaNp_lims[0],
-        r'Ratio'
-    ]
-    # Line slopes for different angle classes
-    line_slopes = {
-        "0–30°": np.tan(np.deg2rad(15)),
-        "30–45°": np.tan(np.deg2rad(37.5)),
-        "45–60°": np.tan(np.deg2rad(52.5)),
-        "60–75°": np.tan(np.deg2rad(67.5)),
-        "75–90°": np.tan(np.deg2rad(82.5)),
-        "30-52.5°": np.tan(np.deg2rad(41.25)),
-        "52.5-75°": np.tan(np.deg2rad(63.75)),
-    }
-
-    # -------------------------------
-    # MAKE AXES FOR THE 3×5 PANELS
-    # -------------------------------
-    axs = []
-    for r in range(3):
-        plot_row_axes = []
-        gs_row = r      
-        for c in range(4):
-            ax = fig.add_subplot(gs[gs_row, c + 1])
-            plot_row_axes.append(ax)
-        axs.append(plot_row_axes)
-    
-    # -------------------------------
-    # Patch Labels (Rounded Boxes)
-    # -------------------------------
-    
-    for r in range(3):
-        ax_patch = fig.add_subplot(gs[r, 0])
-        ax_patch.set_axis_off()
-    
-        # -- Draw text first so we can query its bounding box --
-        txt = ax_patch.text(
-            0.5, 0.5,                     # centered in the Axes
-            row_labels[r],
-            ha="center",
-            va="center",
-            fontsize=12,
-            transform=ax_patch.transAxes,
-            rotation='vertical'
-        )
-    
-        fig.canvas.draw()  # required to obtain correct text bounding box
-    
-        # -- Convert text bounding box from display to Axes coordinates --
-        renderer = fig.canvas.get_renderer()
-        bbox = txt.get_window_extent(renderer=renderer)
-        bbox_axes = TransformedBbox(
-            bbox, ax_patch.transAxes.inverted()
-        )
-    
-        # Add some padding around the text
-        pad_x = 0.04   # fractional padding in axes coordinates
-        pad_y = 0.01
-    
-        x0 = bbox_axes.x0 - pad_x
-        y0 = bbox_axes.y0 - pad_y
-        width = bbox_axes.width + 2 * pad_x
-        height = bbox_axes.height + 2 * pad_y
-    
-        # -- Rounded box placed behind the text --
-        box = FancyBboxPatch(
-            (x0, y0),
-            width,
-            height,
-            boxstyle="round,pad=0.2,rounding_size=0.06",
-            fc="lightgrey",
-            ec="dimgrey",
-            linewidth=1,
-            mutation_aspect=1,
-            transform=ax_patch.transAxes,
-            zorder=0.5,
-        )
-        ax_patch.add_patch(box)
-    
-        # Move text above box
-        txt.set_zorder(1)
-    
-    
-    # -------------------------------
-    # COLORMAP
-    # -------------------------------
-
-    cmap_dict = {"Peak Frequency": [0.007, 0.1], "Normalised Frequency": [0.001, 0.1]}
-
-    powercmp = cm_cram.lipari
-    #powercmp.set_under(powercmp(0))
-    power_norm = colors.LogNorm(vmin=cmap_dict[property_key][0], vmax=cmap_dict[property_key][1])
-
-    comparison_cmp = cm_cram.vik
-    comparison_norm = colors.LogNorm(vmin=0.1, vmax=10)
-    
-    # -------------------------------
-    # PLOT ALL PANELS
-    # -------------------------------
-    
-    for col in range(4):                         # angle class
-        title = angle_titles_wide[col]
-        slope = line_slopes[title]
-    
-        for row in range(3):                     # mach no. class
-            ax = axs[row][col]
-    
-            # Draw contour, magnetopause
-            draw_background(ax, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
-                            X_shue, R_shue)
-    
-            # Histogram for this cell
-            hist = nanp_ca_blocks[row][col]
-    
-            # angle line parameters: (x_s, x_e, y_s, y_e)
-            angle_line = cone_angle_line(fitting_coeffs, title)
-    
-            if row < 2:
-                draw_heatmap(ax, hist, extent, powercmp, power_norm, angle_line)
-    
-            if row == 2:
-                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line)
-    
-            mask_inside_magnetopause(ax, X_shue, R_shue)
-            
-            # redraw magnetopause boundary so it stays crisp
-            ax.plot(X_shue, R_shue, 'k', linewidth=1)
-            
-            set_limits(ax)
-            
-            # Labels
-            if col == 0:
-                ax.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
-            if row == 0:
-                ax.set_title(rf'$\alpha$ = {title}', fontsize=12)
-            if row == 2:
-                ax.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
-
     # -------------------------------
     # COLUMN GROUP LABELS
     # -------------------------------
@@ -1031,7 +741,7 @@ def NaNp_heatmap_plot_B_filt(property_key, nanp_ca_blocks, xedg, yedg, NaNp_lims
     from matplotlib.cm import ScalarMappable
     
     # --- Scalar mappables (independent of any single subplot image)
-    sm_power = ScalarMappable(norm=power_norm, cmap=powercmp)
+    sm_power = ScalarMappable(norm=prop_norm, cmap=propcmp)
     sm_power.set_array([])
     
     sm_ratio = ScalarMappable(norm=comparison_norm, cmap=comparison_cmp)
@@ -1063,105 +773,11 @@ def NaNp_heatmap_plot_B_filt(property_key, nanp_ca_blocks, xedg, yedg, NaNp_lims
     cbar1.ax.yaxis.set_major_formatter(ticker.LogFormatterMathtext())
     cbar2.ax.yaxis.set_major_formatter(ticker.LogFormatterMathtext())
 
-    path = "/Users/roseatkinson/Documents/New_Figs/CA_NaNp" + property_key + "lims_" + NaNp_lims[0] + NaNp_lims[1] + "B_const_3_5.png"
-    plt.savefig(path)
-
-
-############################
-
-
-def CA_Error_Plot(property_key, ca_blocks, xedg, yedg):
-    """Cone Angle 1x5 grid """
-    #find constants for Merka & Shue
-    X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
-
-    fig = plt.figure(figsize=(8.5, 3), dpi=300, constrained_layout=True)
-    gs = fig.add_gridspec(
-        nrows=1, ncols=6,      # 1 column for patch labels
-        width_ratios=[0.35, 1, 1, 1, 1, 1],  # label column thinner
-        wspace=0.05, hspace=0.1
-    )
-
-    fig.suptitle(property_key, fontsize=18)
-    plt.rcParams['axes.labelsize'] = 14
+    path = "/Users/roseatkinson/Documents/New_Figs/Wide_CA_" + filter_key + property_key + "comparison.png"
+    plt.savefig(path, bbox_inches='tight')
     
-    angle_titles = ["0–30°", "30–45°", "45–60°", "60–75°", "75–90°"]
-    extent = [xedg[0], xedg[-1], yedg[0], yedg[-1]]
-    # -------------------------------
-    # MAKE AXES FOR THE 1×5 PANELS
-    # -------------------------------
-    
-    axs = []     
-    for c in range(5):
-        ax = fig.add_subplot(gs[c + 1])
-        axs.append(ax)
-
-    # -------------------------------
-    # COLORMAP
-    # -------------------------------
-
-    powercmp = cm_cram.vik
-    power_norm = colors.TwoSlopeNorm(vmin=-5, vcenter=0., vmax=5)
-
-    # -------------------------------
-    # PLOT ALL PANELS
-    # -------------------------------
-
-    for col in range(5):    # angle class
-        
-        title = angle_titles[col]
-        ax = axs[col]
-
-        # Draw contour, magnetopause
-        draw_background(ax, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
-                        X_shue, R_shue)
-
-        # Histogram for this cell
-        hist = ca_blocks[col]
-        
-        angle_line = cone_angle_line(fitting_coeffs, title)
-
-        draw_heatmap(ax, hist, extent, powercmp, power_norm, angle_line)
-            
-        mask_inside_magnetopause(ax, X_shue, R_shue)
-            
-        # redraw magnetopause boundary so it stays crisp
-        ax.plot(X_shue, R_shue, 'k', linewidth=1)
-        set_limits(ax)
-
-        # Labels
-        ax.set_title(rf'$\alpha$ = {title}', fontsize=12)
-        ax.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
-        if col == 0:
-            ax.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
-            
-            
-
-    # -------------------------------
-    # COLORBAR
-    # -------------------------------
-
-    from matplotlib.cm import ScalarMappable
-
-    # --- Scalar mappables (independent of any single subplot image)
-    sm_power = ScalarMappable(norm=power_norm, cmap=powercmp)
-    sm_power.set_array([])
-
-    cbar1 = fig.colorbar(
-        sm_power,
-        ax=axs[4],
-        location='right',
-        pad=0.02,
-        extend='both'
-    )
-    cbar1.set_label('Error')
-
-    path = "/Users/roseatkinson/Documents/New_Figs/CA_" + property_key + ".png"
-    plt.savefig(path)
-
-
-    
-###############################################################################
+###########################################################################
+###########################################################################
 
 #location map
 
@@ -1187,7 +803,7 @@ def location_mapping(location_list, location_refs):
     draw_background(axsLeft, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
                         X_shue, R_shue)
     
-    angle_line = cone_angle_line(fitting_coeffs, "0–30°")
+    angle_line, tangent_angle_line = cone_angle_line(fitting_coeffs, "0–30°")
     
     x_s, x_e, y_s, y_e = angle_line
     
@@ -1208,8 +824,8 @@ def location_mapping(location_list, location_refs):
     plt.savefig(path)
 
 
-    
-###############################################################################
+###########################################################################
+###########################################################################
 
 def CA_binned_plot(property_key, ca_dict, **other_data):
     """1 x n cone angle grid mapping with dictionary inputs, optional background"""
@@ -1284,7 +900,7 @@ def CA_binned_plot(property_key, ca_dict, **other_data):
         hist = ca_dict[group_name][property_key]
         
         
-        angle_line = cone_angle_line(fitting_coeffs, title)
+        angle_line, tangent_angle_line = cone_angle_line(fitting_coeffs, title)
 
         if 'background' in other_data:
             background_dict = other_data['background']
@@ -1292,7 +908,7 @@ def CA_binned_plot(property_key, ca_dict, **other_data):
             ax.imshow(obs, interpolation='none', origin='lower',
                    extent=extent, cmap=cmap_obs, norm=norm_obs)
         
-        draw_heatmap(ax, hist, extent, cmap, norm, angle_line)
+        draw_heatmap(ax, hist, extent, cmap, norm, angle_line, tangent_angle_line)
             
         mask_inside_magnetopause(ax, X_shue, R_shue)
             
@@ -1363,7 +979,7 @@ def obs_coverage(obs_dict):
     ]
     
     # -------------------------------
-    # MAKE AXES FOR THE 4×5 PANELS
+    # MAKE AXES
     # -------------------------------
     axs = []
     for r in range(4):
@@ -1461,7 +1077,7 @@ def obs_coverage(obs_dict):
             # angle line parameters: (x_s, x_e, y_s, y_e)
             angle_line = (x_s, x_e, y_s, y_e)
     
-            draw_hist(ax, hist, extent, newcmp, angle_line)
+            draw_hist(ax, hist, extent, newcmp, angle_line, tangent_angle_line)
             mask_inside_magnetopause(ax, X_shue, R_shue)
             # redraw magnetopause boundary so it stays crisp
             ax.plot(X_shue, R_shue, 'k', linewidth=1)
@@ -1485,3 +1101,80 @@ def obs_coverage(obs_dict):
                  label='No. of Observations', extend='max')
     
     plt.show()
+
+###############################################################################
+
+def tangent_test(x_t_s, y_t_s):
+    """tangent line plot"""
+    X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
+
+    ###################
+    fig = plt.figure(figsize=(6, 4.5))
+    subfigs = fig.subfigures(1, 1)
+    axsLeft = subfigs.subplots()
+
+    # loc_x = []
+    # loc_y = []
+    # loc_label_list_x = []
+    
+    # for loc_pair in location_list:
+    #     loc_label_x = loc_pair[0]-1
+    #     loc_label_list_x.append(loc_label_x)
+    #     loc_x.append(loc_pair[0])
+    #     loc_y.append(loc_pair[1])
+
+    draw_background(axsLeft, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
+                        X_shue, R_shue)
+
+    # Line slopes for different angle classes
+    line_slopes = {
+        "0–30°": np.tan(np.deg2rad(15)),
+        "30–45°": np.tan(np.deg2rad(37.5)),
+        "45–60°": np.tan(np.deg2rad(52.5)),
+        "60–75°": np.tan(np.deg2rad(67.5)),
+        "75–90°": np.tan(np.deg2rad(82.5)),
+        "30-52.5°": np.tan(np.deg2rad(41.25)),
+        "52.5-75°": np.tan(np.deg2rad(63.75)),
+    }
+    # Bow shock intercept
+    inter_med = fitting_coeffs[6]**2 - (fitting_coeffs[0]*fitting_coeffs[9])
+    x_s = (-fitting_coeffs[6] + np.sqrt(inter_med)) / fitting_coeffs[0]
+    x_e = 30
+    y_s = 0
+    slope = line_slopes["52.5-75°"]
+    y_e = -x_e * slope
+
+    #and also tangent points...
+
+    #fitting function taking Z as zero
+    # f = fitting_coeffs[0]*Xn**2 + fitting_coeffs[1]*Yn**2 + 2*fitting_coeffs[3]*Xn*Yn + 2*fitting_coeffs[6]*Xn+2*fitting_coeffs[7]*Yn + fitting_coeffs[9]
+
+    #best guesses:
+    #15 deg case x = 3 y =20
+    
+    x_s = (-fitting_coeffs[6] + np.sqrt(inter_med)) / fitting_coeffs[0]
+    x_e = 30
+    y_s = 0
+    y_e = -(x_e-x_s) * slope
+
+    #x_t_s = 3.5
+    x_t_e = 30
+    #y_t_s = 19.5
+    x_diff = x_t_e-x_t_s
+    y_t_e = (-x_diff * slope) +  y_t_s
+
+    axsLeft.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
+    axsLeft.plot([x_t_s, x_t_e], [y_t_s, y_t_e], color='k', linewidth=1)
+    #axsLeft.scatter(loc_x, loc_y, marker="o", c="blue", s=60)
+
+    #for loc_lab_x, loc_lab_y, loc_ref in zip(loc_label_list_x, loc_y, location_refs):
+        #plt.text(loc_lab_x, loc_lab_y, loc_ref, color="maroon", weight= 'bold', fontsize=16)
+
+    set_limits(axsLeft)
+
+    axsLeft.set_title(r'Tangent Locations')
+    axsLeft.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+    axsLeft.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+
+    path = "/Users/roseatkinson/Documents/New_Figs/Tangent_Test.png"
+    plt.savefig(path)

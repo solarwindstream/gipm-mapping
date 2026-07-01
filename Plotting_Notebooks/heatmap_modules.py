@@ -13,7 +13,7 @@ def compute_hists2d(df, metric, *keys, **choices):
     x_col='GIPM X (OMNI mean)'
     y_col='GIPM Y (OMNI mean)'
 
-    w_dict = {'Transverse Power':'ULF Band Normalised Transverse Power', 'Compressive Power':'ULF Band Normalised Compressive Power', 'Compressibility':'Compressibility', 'Compressive Frequency': 'Peak Compressive Frequency', 'Transverse Frequency': 'Peak Transverse Frequency', 'Ellipticity': 'Ratio of Perpendicular Power', 'Takahashi Transverse Error/Resolution':'Takahashi Transverse Error/Measurement Resolution', 'Takahashi Compressive Error/Resolution':'Takahashi Compressive Error/Measurement Resolution', 'Heilig Transverse Error/Resolution':'Heilig Transverse Error/Measurement Resolution', 'Takahashi Transverse Difference': 'Takahashi Transverse Difference', 'Takahashi Compressive Difference': 'Takahashi Compressive Difference', 'Heilig Transverse Difference': 'Heilig Transverse Difference', 'Heilig Compressive Difference': 'Heilig Compressive Difference'}
+    w_dict = {'Normalised Transverse Power':'ULF Band Normalised Transverse Power', 'Normalised Compressive Power':'ULF Band Normalised Compressive Power', 'Compressibility':'Compressibility', 'Compressive Frequency': 'Peak Compressive Frequency', 'Transverse Frequency': 'Peak Transverse Frequency', 'Ellipticity': 'Ratio of Perpendicular Power', 'Takahashi Transverse Error/Resolution':'Takahashi Transverse Error/Measurement Resolution', 'Takahashi Compressive Error/Resolution':'Takahashi Compressive Error/Measurement Resolution', 'Heilig Transverse Error/Resolution':'Heilig Transverse Error/Measurement Resolution', 'Takahashi Transverse Difference': 'Takahashi Transverse Difference', 'Takahashi Compressive Difference': 'Takahashi Compressive Difference', 'Heilig Transverse Difference': 'Heilig Transverse Difference', 'Heilig Compressive Difference': 'Heilig Compressive Difference'}
 
     if 'obs_min' in choices:
         min_obs=choices['obs_min']
@@ -23,7 +23,7 @@ def compute_hists2d(df, metric, *keys, **choices):
     hist_dict = {}
     
     #calculate basic histogram in all cases
-    hist_count,x_edge, y_edge, _ = stats.binned_statistic_2d(df[x_col].to_numpy(), df[y_col].to_numpy(), df[w_dict['Transverse Power']].to_numpy(), statistic='count', bins=[x_bin_edges, y_bin_edges])
+    hist_count,x_edge, y_edge, _ = stats.binned_statistic_2d(df[x_col].to_numpy(), df[y_col].to_numpy(), df[w_dict['Normalised Transverse Power']].to_numpy(), statistic='count', bins=[x_bin_edges, y_bin_edges])
 
     #produce a copy of count distribution histogram for masking purposes
     hist_count_c = hist_count.copy()
