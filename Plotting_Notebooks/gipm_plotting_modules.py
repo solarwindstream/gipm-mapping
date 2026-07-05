@@ -89,71 +89,94 @@ def cone_angle_line(fitting_coeffs, angle_key):
         "52.5-75°": np.tan(np.deg2rad(63.75)),
     }
 
-    tangent_start = {
-        "30–45°": [2.5, 20],
-        "45–60°": [3, 20],
-        "60–75°": [6, 20],
-        "75–90°": [10.2, 20],
-        "30-52.5°": [2.6, 20],
-        "52.5-75°": [5.2, 20],
+    ion_slopes = {
+        "0–30°": np.tan(np.deg2rad(22.4)),
+        "30–45°": np.tan(np.deg2rad(54.4)),
+        "45–60°": np.tan(np.deg2rad(74.1)),
+        "60–75°": np.tan(np.deg2rad(92.3)),
+        "75–90°": np.tan(np.deg2rad(108.9)),
+        "30-52.5°": np.tan(np.deg2rad(59.5)),
+        "52.5-75°": np.tan(np.deg2rad(87.9)),
     }
+
+    #full line
+    #30-45:[2.5, 20]
+    #45-60: [3, 20]
+    #60-75:[6, 20]
+    #75-90: [10.2, 20]
+    #"30-52.5°": [2.6, 20],
+    #"52.5-75°": [5.2, 20],
     
+    tangent_start = {
+        "30–45°": [0, 22.3],
+        "45–60°": [8.1, 13.3],
+        "60–75°": [11.1, 7.6],
+        "75–90°": [12.5, 2.0],
+        "30-52.5°": [0, 22.3],
+        "52.5-75°": [10.1, 9.8],
+    }
+
+    #based on 70deg currently:
+    ion_start = {
+        "0–30°": [0,22.3],
+        "30–45°": [8.7, 12.3],
+        "45–60°": [11.7, 5.9],
+        "60–75°": [12.6, 2.0],
+        "75–90°": [12.2, -4.84],
+        "30-52.5°": [9.7, 10.6],
+        "52.5-75°": [12.6, 2.0],
+    }
+
     # Bow shock intercept
 
-    if angle_key != "75–90°":
+    if angle_key == "0–30°":
         inter_med = fitting_coeffs[6]**2 - (fitting_coeffs[0]*fitting_coeffs[9])
         x_s = (-fitting_coeffs[6] + np.sqrt(inter_med)) / fitting_coeffs[0]
         x_e = 30
         y_s = 0
         slope = line_slopes[angle_key]
         y_e = -(x_e-x_s) * slope
-    
-    else:
-        #hiding the angle line for the high angle case as it is only slightly offset from the tangent line
-        x_s = 0
-        x_e = 0
-        y_s = 0
+
+    #tangent with same angle (if alpha >30):
+    if angle_key != "0–30°":
+        x_s = tangent_start[angle_key][0]
+        x_e = 30
+        y_s = tangent_start[angle_key][1]
         x_diff = x_e-x_s
         slope = line_slopes[angle_key]
         y_e = (-x_diff * slope) +  y_s
 
-    #tangent with same angle (if alpha >30):
-    if angle_key != "0–30°":
-        x_t_s = tangent_start[angle_key][0]
-        x_t_e = 30
-        y_t_s = tangent_start[angle_key][1]
-        x_diff = x_t_e-x_t_s
-        slope = line_slopes[angle_key]
-        y_t_e = (-x_diff * slope) +  y_t_s
+    x_i_s = ion_start[angle_key][0]
 
+    if angle_key in ["60–75°","75–90°"]:
+        x_i_e = 5
     else:
-        x_t_s = 0
-        x_t_e = 0
-        y_t_s = 0
-        x_diff = x_t_e-x_t_s
-        slope = line_slopes[angle_key]
-        y_t_e = (-x_diff * slope) +  y_t_s
+        x_i_e = 30
         
-    
+    y_i_s = ion_start[angle_key][1]
+    x_diff = x_i_e-x_i_s
+    slope = ion_slopes[angle_key]
+    y_i_e = (-x_diff * slope) +  y_i_s
+
     # angle line parameters: (x_s, x_e, y_s, y_e)
     angle_line = (x_s, x_e, y_s, y_e)
-    tangent_angle_line = (x_t_s, x_t_e, y_t_s, y_t_e)
+    ion_angle_line = (x_i_s, x_i_e, y_i_s, y_i_e)
     
-    return(angle_line, tangent_angle_line)
+    return(angle_line, ion_angle_line)
 
 
-def draw_hist(ax, hist, extent, cmap, v_bounds, angle_line, tangent_angle_line):
+def draw_hist(ax, hist, extent, cmap, v_bounds, angle_line, ion_angle_line):
     """Draw heatmap + cone angle line. v_bounds is list taking lower, upper values in order."""
     ax.imshow(hist, interpolation='none', origin='lower',
               extent=extent, cmap=cmap, vmin=v_bounds[0], vmax=v_bounds[1])  
 
     x_s, x_e, y_s, y_e = angle_line
-    x_t_s, x_t_e, y_t_s, y_t_e = tangent_angle_line
-    ax.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
-    ax.plot([x_t_s, x_t_e], [y_t_s, y_t_e], color='k', linewidth=1)
+    x_i_s, x_i_e, y_i_s, y_i_e = ion_angle_line
+    ax.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=0.5)
+    ax.plot([x_i_s, x_i_e], [y_i_s, y_i_e], color='k', linestyle='dashed', linewidth=1)
 
     
-def draw_heatmap(ax, hist, extent, cmap, cmap_norm, angle_line, tangent_angle_line, **details):
+def draw_heatmap(ax, hist, extent, cmap, cmap_norm, angle_line, ion_angle_line, **details):
     if 'alpha' in details:
         set_a = details['alpha']
     else:
@@ -163,9 +186,9 @@ def draw_heatmap(ax, hist, extent, cmap, cmap_norm, angle_line, tangent_angle_li
               extent=extent, cmap=cmap, norm=cmap_norm, alpha=set_a)
     
     x_s, x_e, y_s, y_e = angle_line
-    x_t_s, x_t_e, y_t_s, y_t_e = tangent_angle_line
-    ax.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1)
-    ax.plot([x_t_s, x_t_e], [y_t_s, y_t_e], color='k', linewidth=1)
+    x_i_s, x_i_e, y_i_s, y_i_e = ion_angle_line
+    ax.plot([x_s, x_e], [y_s, y_e], color='dimgrey', linewidth=1)
+    ax.plot([x_i_s, x_i_e], [y_i_s, y_i_e], color='dimgrey', linestyle='dashed', linewidth=1)
 
 def set_limits(ax):
     ax.set_xlim(0, 20)
@@ -417,13 +440,13 @@ def MA_CA_Binned_Plot(property_key,comparison_key, ma_ca_dict, **other_choices):
             row_name = row_list[row]
             hist = ma_ca_dict[row_name][col_name][property_key]
             
-            angle_line, tangent_angle_line = cone_angle_line(fitting_coeffs, title)
+            angle_line, ion_angle_line = cone_angle_line(fitting_coeffs, title)
             
             if row < 2:
-                draw_heatmap(ax, hist, extent, powercmp, power_norm, angle_line, tangent_angle_line)
+                draw_heatmap(ax, hist, extent, powercmp, power_norm, angle_line, ion_angle_line)
 
             if row == 2:
-                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line, tangent_angle_line)
+                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line, ion_angle_line)
                 
             mask_inside_magnetopause(ax, X_shue, R_shue)
             
@@ -504,7 +527,7 @@ def wider_binned_plot(property_key, filter_key, p_ca_dict, p_lims):
 
     angle_titles_wide = ["30-52.5°", "52.5-75°", "30-52.5°", "52.5-75°"]
     cbar_titles = {"Peak Frequency": "Frequency, mHz", "Normalised Power": "Normalised Power"}
-    fig_titles = {"MA":"Mach Number", "B":"IMF Magnitude", "V":"Solar Wind Speed", "np":"Solar Wind Density", "nanp":"Alpha/Proton Ratio"}
+    fig_titles = {"MA":"Mach Number", "B":"IMF Magnitude", "V":"Solar Wind Speed", "np":"Solar Wind Density", "nanp":"Alpha/Proton Ratio", "pdyn": "Dynamic Pressure"}
 
     xedg = range(20)
     yedg = range(-20, 20)
@@ -526,8 +549,8 @@ def wider_binned_plot(property_key, filter_key, p_ca_dict, p_lims):
     fig.suptitle(f"Effect of {fig_titles[filter_key]}", fontsize=18, y=1.08)
     plt.rcParams['axes.labelsize'] = 14
 
-    row_dict = {"MA":r"A_{\mathrm{A}}", "B":r"B_{\mathrm{IMF}}", "V":r"V_{\mathrm{SW}}", "np": r"n_p", "nanp": r"N_a/N_p"}
-    units_dict = {"MA":"", "B":r"\mathrm{nT}", "V": r"\mathrm{km\,s^{-1}}", "np":r"\mathrm{cc^{-1}}", "nanp": ""}
+    row_dict = {"MA":r"M_{\mathrm{A}}", "B":r"B_{\mathrm{IMF}}", "V":r"V_{\mathrm{SW}}", "np": r"n_p", "nanp": r"N_a/N_p", "pdyn": r"p_{\mathrm{dyn}}"}
+    units_dict = {"MA":"", "B":r"\mathrm{nT}", "V": r"\mathrm{km\,s^{-1}}", "np":r"\mathrm{cc^{-1}}", "nanp": "", "pdyn":r"\mathrm{nPa}"}
 
     if filter_key != 'MA':
         # Row labels (top row → bottom row)
@@ -684,13 +707,13 @@ def wider_binned_plot(property_key, filter_key, p_ca_dict, p_lims):
                 hist = p_ca_dict[row_name][col_name][comp_type]
             
             # angle line parameters: (x_s, x_e, y_s, y_e)
-            angle_line, tangent_angle_line = cone_angle_line(fitting_coeffs, title)
+            angle_line, ion_angle_line = cone_angle_line(fitting_coeffs, title)
     
             if row < 2:
-                draw_heatmap(ax, hist, extent, propcmp, prop_norm, angle_line, tangent_angle_line)
+                draw_heatmap(ax, hist, extent, propcmp, prop_norm, angle_line, ion_angle_line)
     
             if row == 2:
-                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line, tangent_angle_line)
+                draw_heatmap(ax, hist, extent, comparison_cmp, comparison_norm, angle_line, ion_angle_line)
     
             mask_inside_magnetopause(ax, X_shue, R_shue)
             
@@ -803,7 +826,7 @@ def location_mapping(location_list, location_refs):
     draw_background(axsLeft, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
                         X_shue, R_shue)
     
-    angle_line, tangent_angle_line = cone_angle_line(fitting_coeffs, "0–30°")
+    angle_line, ion_angle_line = cone_angle_line(fitting_coeffs, "0–30°")
     
     x_s, x_e, y_s, y_e = angle_line
     
@@ -900,7 +923,7 @@ def CA_binned_plot(property_key, ca_dict, **other_data):
         hist = ca_dict[group_name][property_key]
         
         
-        angle_line, tangent_angle_line = cone_angle_line(fitting_coeffs, title)
+        angle_line, ion_angle_line = cone_angle_line(fitting_coeffs, title)
 
         if 'background' in other_data:
             background_dict = other_data['background']
@@ -908,7 +931,7 @@ def CA_binned_plot(property_key, ca_dict, **other_data):
             ax.imshow(obs, interpolation='none', origin='lower',
                    extent=extent, cmap=cmap_obs, norm=norm_obs)
         
-        draw_heatmap(ax, hist, extent, cmap, norm, angle_line, tangent_angle_line)
+        draw_heatmap(ax, hist, extent, cmap, norm, angle_line, ion_angle_line)
             
         mask_inside_magnetopause(ax, X_shue, R_shue)
             
@@ -957,6 +980,10 @@ def CA_binned_plot(property_key, ca_dict, **other_data):
 
     path = "/Users/roseatkinson/Documents/New_Figs/" + filename + "_SWFilt.png"
     plt.savefig(path)
+
+
+###########################################################################
+###########################################################################
 
 def obs_coverage(obs_dict):
     
@@ -1077,7 +1104,7 @@ def obs_coverage(obs_dict):
             # angle line parameters: (x_s, x_e, y_s, y_e)
             angle_line = (x_s, x_e, y_s, y_e)
     
-            draw_hist(ax, hist, extent, newcmp, angle_line, tangent_angle_line)
+            draw_hist(ax, hist, extent, newcmp, angle_line, ion_angle_line)
             mask_inside_magnetopause(ax, X_shue, R_shue)
             # redraw magnetopause boundary so it stays crisp
             ax.plot(X_shue, R_shue, 'k', linewidth=1)
