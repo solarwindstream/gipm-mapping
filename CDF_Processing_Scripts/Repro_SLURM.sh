@@ -20,5 +20,4 @@ source /data/home/apx059/GIPM_new_env/bin/activate
 echo 'loaded env'
 
 set -e
-echo 'whatever the fuck this does'
 python CDF_Processing_Script.py

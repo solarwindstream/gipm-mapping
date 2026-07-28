@@ -4,7 +4,7 @@
 #SBATCH -n 1      # request 1 core/task
 #SBATCH --mem-per-cpu=20GB   # request 1GB RAM (can also use MB or decimal values)
 #SBATCH --time=1:00:00  # request 1 hour(s) runtime - n.b. is this per task?
-#SBATCH --array=0	# array task range (each task sets SLURM_ARRAY_TASK_ID var)
+#SBATCH --array=6	# array task range (each task sets SLURM_ARRAY_TASK_ID var)
 #SBATCH -o /gpfs/scratch/apx059/%x_%A_%a.log	# log output
 
 echo "Starting job #${SLURM_JOBID}"

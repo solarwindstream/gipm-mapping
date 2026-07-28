@@ -1,20 +1,33 @@
 import pandas as pd
 
-def sample_filter(df_high, df_low):
+def sample_filter(df_high, df_low, **other):
 
     #filter dfs for FS, SW, QPARA MSH & QPERP MSH
-    #for spiral cone angles, 30-45 degrees
+    #for low spiral cone angles
+
+    if 'alt' in other:
+        
+        #Foreshock
     
-    #Foreshock
+        x_lim_fs = [11, 13]
+        y_lim_fs = [-13, -11]
     
-    x_lim_fs = [10, 12]
-    y_lim_fs = [-13, -11]
+        #Solar Wind
     
-    #Solar Wind
-    
-    x_lim_sw = [10, 12]
-    y_lim_sw = [11, 13]
-    
+        x_lim_sw = [11, 13]
+        y_lim_sw = [11, 13]
+
+    else:
+            
+        #Foreshock
+        
+        x_lim_fs = [10, 12]
+        y_lim_fs = [-13, -11]
+        
+        #Solar Wind
+        
+        x_lim_sw = [10, 12]
+        y_lim_sw = [11, 13]
     
     #Qpara Magnetosheath
     
@@ -60,9 +73,40 @@ def power_comparison(sample_dict, quantity):
     qperp_high = sample_dict["Qperp MSH high"]
     qperp_low = sample_dict["Qperp MSH low"]
 
-    print("\033[1m" + 'Std Dev Normalised Transverse Power by Region, alpha=30-45deg' + "\033[0;0m") 
-    print(f'Foreshock, High {quantity}:', fs_high['ULF Band Normalised Transverse Power'].std())
-    print(f'Foreshock, Low {quantity}:', fs_low['ULF Band Normalised Transverse Power'].std())
+    
+    quantity_dict = {'MA': 'M_A (mean)', 'B':'IMF B (mean)', 'V': 'SW V (mean)', 'Np': 'SW Np (mean)', 'pdyn': 'pdyn, nPa'}
+
+    quant_ex = quantity_dict[quantity]
+
+    print("\033[1m" + 'Foreshock:' + "\033[0;0m") 
+
+    print(f'Foreshock Transverse Power, High {quantity}:', fs_high['ULF Band Normalised Transverse Power'].mean(), u"\u00B1", fs_high['ULF Band Normalised Transverse Power'].sem())
+    print(f'Foreshock Transverse Power, Low {quantity}:', fs_low['ULF Band Normalised Transverse Power'].mean(), u"\u00B1", fs_low['ULF Band Normalised Transverse Power'].sem())
+    print(f'Foreshock Compressive Power, High {quantity}:', fs_high['ULF Band Normalised Compressive Power'].mean(), u"\u00B1", fs_high['ULF Band Normalised Compressive Power'].sem())
+    print(f'Foreshock Compressive Power, Low {quantity}:', fs_low['ULF Band Normalised Compressive Power'].mean(), u"\u00B1", fs_low['ULF Band Normalised Compressive Power'].sem())
+    
+    print(f'Mean {quantity}, high:', fs_high[quant_ex].mean(), u"\u00B1", fs_high[quant_ex].sem())
+    print(f'Mean {quantity}, low:', fs_low[quant_ex].mean(), u"\u00B1", fs_low[quant_ex].sem())
+    #, f'Mean Normalised Transverse Power, high {quantity}:', fs_high['ULF Band Normalised Transverse Power'].mean() ,f'Mean Compressive, high {quantity}:', fs_high['ULF Band Normalised Compressive Power'].mean()
+    #, f'Mean Normalised Transverse Power, low {quantity}:', fs_low['ULF Band Normalised Transverse Power'].mean() ,f'Mean Compressive, low {quantity}:', fs_low['ULF Band Normalised Compressive Power'].mean()
+
+    
+    print(f'Foreshock Transverse S.D., High {quantity}:', fs_high['ULF Band Normalised Transverse Power'].std())
+    print(f'Foreshock Transverse S.D., Low {quantity}:', fs_low['ULF Band Normalised Transverse Power'].std())
+    print(f'Foreshock Compressive S.D., High {quantity}:', fs_high['ULF Band Normalised Compressive Power'].std())
+    print(f'Foreshock Compressive S.D., Low {quantity}:', fs_low['ULF Band Normalised Compressive Power'].std())
+    print(' ')
+    
+    print("\033[1m" + 'Foreshock Changes:' + "\033[0;0m") 
+    print(f'Ratio, {quantity} Change:', fs_high[quant_ex].mean()/fs_low[quant_ex].mean())
+    print('Ratio, Normalised Transverse Change:', fs_high['ULF Band Normalised Transverse Power'].mean()/fs_low['ULF Band Normalised Transverse Power'].mean())
+    print('Ratio, Normalised Compressive Change:', fs_high['ULF Band Normalised Compressive Power'].mean()/fs_low['ULF Band Normalised Compressive Power'].mean())
+    print(' ')
+    
+    print("\033[1m" + 'Foreshock vs Solar Wind Compressibility' + "\033[0;0m") 
+    print(f'Mean FS Compressibility, Low {quantity}:', fs_low['Compressibility'].mean(),f'Mean SW Compressibility, Low {quantity}:', sw_low['Compressibility'].mean() ,'Ratio:', (fs_low['Compressibility'].mean())/(sw_low['Compressibility'].mean()))
+
+    print("\033[1m" + 'Std Dev Normalised Transverse Power, other regions, alpha=30-52.5deg' + "\033[0;0m") 
     print(f'Q-para MSH, High {quantity}:', qpara_high['ULF Band Normalised Transverse Power'].std())
     print(f'Q-para MSH, Low {quantity}:', qpara_low['ULF Band Normalised Transverse Power'].std())
     print(' ')
@@ -73,8 +117,6 @@ def power_comparison(sample_dict, quantity):
     
     print(' ')
     print("\033[1m" + 'Std Dev Normalised Compressive Power by Region' + "\033[0;0m") 
-    print(f'Foreshock, High {quantity}:', fs_high['ULF Band Normalised Compressive Power'].std())
-    print(f'Foreshock, Low {quantity}:', fs_low['ULF Band Normalised Compressive Power'].std())
     print(f'Q-para MSH, High {quantity}:', qpara_high['ULF Band Normalised Compressive Power'].std())
     print(f'Q-para MSH, Low {quantity}:', qpara_low['ULF Band Normalised Compressive Power'].std())
     print(' ')
@@ -83,9 +125,8 @@ def power_comparison(sample_dict, quantity):
     print(f'Q-perp MSH, High {quantity}:', qperp_high['ULF Band Normalised Compressive Power'].std())
     print(f'Q-perp MSH, Low {quantity}:', qperp_low['ULF Band Normalised Compressive Power'].std())
     
-    print("\033[1m" + 'Mean \u00B1 Standard Error, Transverse Power, alpha=30-45deg' + "\033[0;0m") 
-    print(f'Foreshock, High {quantity}:', fs_high['ULF Band Normalised Transverse Power'].mean(), u"\u00B1", fs_high['ULF Band Normalised Transverse Power'].sem())
-    print(f'Foreshock, Low {quantity}:', fs_low['ULF Band Normalised Transverse Power'].mean(), u"\u00B1", fs_low['ULF Band Normalised Transverse Power'].sem())
+    print("\033[1m" + 'Mean \u00B1 Standard Error, Transverse Power, alpha=30-52.5deg' + "\033[0;0m") 
+
     print(f'Q-para MSH, High {quantity}:', qpara_high['ULF Band Normalised Transverse Power'].mean(), u"\u00B1", qpara_high['ULF Band Normalised Transverse Power'].sem())
     print(f'Q-para MSH, Low {quantity}:', qpara_low['ULF Band Normalised Transverse Power'].mean(), u"\u00B1", qpara_low['ULF Band Normalised Transverse Power'].sem())
     print(' ')
@@ -95,9 +136,7 @@ def power_comparison(sample_dict, quantity):
     print(f'Q-perp MSH, Low {quantity}:', qperp_low['ULF Band Normalised Transverse Power'].mean(), u"\u00B1", qperp_low['ULF Band Normalised Transverse Power'].sem())
     
     print(' ')
-    print("\033[1m" + 'Mean \u00B1 Standard Error, Compressive Power, alpha=30-45deg' + "\033[0;0m") 
-    print(f'Foreshock, High {quantity}:', fs_high['ULF Band Normalised Compressive Power'].mean(), u"\u00B1", fs_high['ULF Band Normalised Compressive Power'].sem())
-    print(f'Foreshock, Low {quantity}:', fs_low['ULF Band Normalised Compressive Power'].mean(), u"\u00B1", fs_low['ULF Band Normalised Compressive Power'].sem())
+    print("\033[1m" + 'Mean \u00B1 Standard Error, Compressive Power, alpha=30-52.5deg' + "\033[0;0m") 
     print(f'Q-para MSH, High {quantity}:', qpara_high['ULF Band Normalised Compressive Power'].mean(), u"\u00B1", qpara_high['ULF Band Normalised Compressive Power'].sem())
     print(f'Q-para MSH, Low {quantity}:', qpara_low['ULF Band Normalised Compressive Power'].mean(), u"\u00B1", qpara_low['ULF Band Normalised Compressive Power'].sem())
     print(' ')
@@ -106,19 +145,6 @@ def power_comparison(sample_dict, quantity):
     print(f'Q-perp MSH, High {quantity}:', qperp_high['ULF Band Normalised Compressive Power'].mean(), u"\u00B1", qperp_high['ULF Band Normalised Compressive Power'].sem())
     print(f'Q-perp MSH, Low {quantity}:', qperp_low['ULF Band Normalised Compressive Power'].mean(), u"\u00B1", qperp_low['ULF Band Normalised Compressive Power'].sem())
 
-    quantity_dict = {'MA': 'M_A (mean)', 'B':'IMF B (mean)', 'V': 'SW V (mean)', 'Np': 'SW Np (mean)'}
-
-    quant_ex = quantity_dict[quantity]
     
-    print("\033[1m" + 'Foreshock Changes:' + "\033[0;0m") 
-    print(f'Mean {quantity}, high:', fs_high[quant_ex].mean(),f'Mean Normalised Transverse Power, high {quantity}:', fs_high['ULF Band Normalised Transverse Power'].mean() ,f'Mean Compressive, high {quantity}:', fs_high['ULF Band Normalised Compressive Power'].mean())
-    print(f'Mean {quantity}, low:', fs_low[quant_ex].mean(),f'Mean Normalised Transverse Power, low {quantity}:', fs_low['ULF Band Normalised Transverse Power'].mean() ,f'Mean Compressive, low {quantity}:', fs_low['ULF Band Normalised Compressive Power'].mean())
-    print(f'Ratio, {quantity} Change:', fs_high[quant_ex].mean()/fs_low[quant_ex].mean())
-    print('Ratio, Normalised Transverse Change:', fs_high['ULF Band Normalised Transverse Power'].mean()/fs_low['ULF Band Normalised Transverse Power'].mean())
-    print('Ratio, Normalised Compressive Change:', fs_high['ULF Band Normalised Compressive Power'].mean()/fs_low['ULF Band Normalised Compressive Power'].mean())
-    
-    
-    print("\033[1m" + 'Foreshock vs Solar Wind Compressibility' + "\033[0;0m") 
-    print(f'Mean FS Compressibility, Low {quantity}:', fs_low['Compressibility'].mean(),f'Mean SW Compressibility, Low {quantity}:', sw_low['Compressibility'].mean() ,'Ratio:', (fs_low['Compressibility'].mean())/(sw_low['Compressibility'].mean()))
 
     return()

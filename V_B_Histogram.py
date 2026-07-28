@@ -11,7 +11,6 @@ from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 
 #import modules
-from matplotlib import pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.colors import BoundaryNorm, ListedColormap
 from matplotlib import cm
