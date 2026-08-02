@@ -98,9 +98,18 @@ def TS_plot(csv_path , str_centre):
 
 #########################################################################
 
-def TS_and_FS(ts_dfs, fs_dfs, labels):
+def TS_and_FS(ts_dfs, fs_dfs, labels, **kwargs):
 
     #ts_dfs, fs_dfs, labels should be a list, ts dfs should be shortened
+    power_dict = {'abs': r'Power Spectral Density, $\mathrm{nT^2/Hz}$', 'norm': r'Power Spectral Density, $\mathrm{nT^2/Hz}$'}
+
+    if 'norm' in kwargs:
+        if kwargs['norm']==True:
+            y_label = power_dict['norm']
+        else:
+            y_label = power_dict['abs']
+    else:
+        y_label = power_dict['abs']
 
     fig_width = 4*len(ts_dfs)
     
@@ -152,36 +161,66 @@ def TS_and_FS(ts_dfs, fs_dfs, labels):
         ax.yaxis.grid(color='lightgray')
         ax.xaxis.grid(color='lightgray')
 
-    for df,ax in zip(fs_dfs,fs_axes):
+    if 'tak_freq' in kwargs:
+                
+        for df,ax,freq in zip(fs_dfs,fs_axes, kwargs['tak_freq']):
 
-        ax.plot(df['Frequency'], df['Total Transverse Power'], color="black", label='Transverse')
-        ax.plot(df['Frequency'], df['Compressive Power'], color="red", label='Compressive')
-        ax.set_xscale('log')
-        ax.set_yscale('log')
-        ax.set_ylabel(r'Power Spectral Density, $\mathrm{nT^2/Hz}$')
-        ax.set_xlabel('Frequency, Hz')
-        ax.set_xlim(0.001, 5)
-        ax.set_ylim(0.000001, 1000)
-        ax.yaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
-        ax.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 10000, linestyles='dotted', color='k')
-        ax.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 10000, linestyles='dotted', color='k')
-        ax.axvspan(int_lower_lim, int_upper_lim, color='orange', alpha=0.5)
-        ax.xaxis.set_tick_params(labelsize=12)
-        ax.yaxis.set_tick_params(labelsize=12)
-        ax.set_axisbelow(True)
-        ax.yaxis.grid(color='lightgray')
-        ax.xaxis.grid(color='lightgray')
-        ax.legend(loc='upper right')
+            ax.plot(df['Frequency'], df['Total Transverse Power'], color="black", label='Transverse')
+            ax.plot(df['Frequency'], df['Compressive Power'], color="red", label='Compressive')
+            ax.set_xscale('log')
+            ax.set_yscale('log')
+            ax.set_ylabel(y_label)
+            ax.set_xlabel('Frequency, Hz')
+            ax.set_xlim(0.001, 5)
+            ax.set_ylim(0.000001, 1000)
+            ax.yaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
+            ax.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 10000, linestyles='dotted', color='k')
+            ax.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 10000, linestyles='dotted', color='k')
+            ax.axvspan(int_lower_lim, int_upper_lim, color='orange', alpha=0.5)
+            ax.vlines(x=freq, ymin = 0.0000001, ymax = 100_000_000, linestyles='solid', color='k', label='Proton (Takahashi)')
+            ax.vlines(x=freq/2, ymin = 0.0000001, ymax = 100_000_000, linestyles='dashed', color='k', label='Alpha (Takahashi)')
+            ax.xaxis.set_tick_params(labelsize=12)
+            ax.yaxis.set_tick_params(labelsize=12)
+            ax.set_axisbelow(True)
+            ax.yaxis.grid(color='lightgray')
+            ax.xaxis.grid(color='lightgray')
+            ax.legend(loc='lower left')
+
+    else:
+        for df,ax in zip(fs_dfs,fs_axes):
+            ax.plot(df['Frequency'], df['Total Transverse Power'], color="black", label='Transverse')
+            ax.plot(df['Frequency'], df['Compressive Power'], color="red", label='Compressive')
+            ax.set_xscale('log')
+            ax.set_yscale('log')
+            ax.set_ylabel(y_label)
+            ax.set_xlabel('Frequency, Hz')
+            ax.set_xlim(0.001, 5)
+            ax.set_ylim(0.000001, 1000)
+            ax.yaxis.set_major_locator(ticker.LogLocator(base=10, numticks=15))
+            ax.vlines(x=int_lower_lim, ymin = 0.0000001, ymax = 10000, linestyles='dotted', color='k')
+            ax.vlines(x=int_upper_lim, ymin = 0.0000001, ymax = 10000, linestyles='dotted', color='k')
+            ax.axvspan(int_lower_lim, int_upper_lim, color='orange', alpha=0.5)
+            ax.xaxis.set_tick_params(labelsize=12)
+            ax.yaxis.set_tick_params(labelsize=12)
+            ax.set_axisbelow(True)
+            ax.yaxis.grid(color='lightgray')
+            ax.xaxis.grid(color='lightgray')
+            ax.legend(loc='upper right')
 
     plt.rcParams['axes.titlesize'] = 18
     plt.rcParams['axes.labelsize'] = 18
     
     # Adjust layout
     plt.tight_layout()
-    
-    # Display the plot
-    plt.show()
 
+    if 'filename' in kwargs:
+        fname = kwargs['filename']
+        path = "/Users/roseatkinson/Documents/New_Figs/Nanp"+fname+".png"
+    else:
+        path = "/Users/roseatkinson/Documents/New_Figs/Nanp_Temp.png"
+        
+    plt.savefig(path, bbox_inches='tight')
+    
 #############################################################
 
 def spectra_overlay_plot(f_df_list, alpha_bin, cone_angle):
