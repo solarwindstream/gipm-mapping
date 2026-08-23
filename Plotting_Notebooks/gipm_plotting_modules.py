@@ -889,7 +889,7 @@ def location_mapping(location_list, angle_key, **kwargs):
         path = f"/Users/roseatkinson/Documents/New_Figs/{kwargs['filename']}.png"
     else:
         path = "/Users/roseatkinson/Documents/New_Figs/AlphaCaseStudyLocations.png"
-    plt.savefig(path)
+    plt.savefig(path, bbox_inches='tight')
 
 
 ###########################################################################
@@ -1011,19 +1011,22 @@ def CA_binned_plot(property_key, ca_dict, **other_data):
         extend='both'
     )
 
-    cbar_labels = {'Transverse Power':'Normalised Power', 'Compressive Power':'Normalised Power', 'Compressibility':'Compressibility', 'Compressive Frequency': 'Peak Frequency, mHz', 'Transverse Frequency': 'Peak Frequency, mHz', 'Ellipticity': 'Ellipticity', 'Takahashi Transverse Error/Resolution':'Error/Resolution', 'Takahashi Compressive Error/Resolution':'Error/Resolution', 'Heilig Transverse Error/Resolution':'Error/Resolution', 'Takahashi Transverse Error': 'Fractional Error', 'Takahashi Compressive Error': 'Fractional Error', 'Heilig Transverse Error': 'Fractional Error', 'Takahashi Transverse Error/Std Dev': 'Error/std dev', 'Takahashi Compressive Error/Std Dev': 'Error/std dev', 'Heilig Transverse Error/Std Dev': 'Error/std dev', 'Heilig Compressive Error/Std Dev': 'Error/std dev'}
+    cbar_labels = {'Transverse Power':'Normalised Power', 'Compressive Power':'Normalised Power', 'Compressibility':'Compressibility', 'Compressive Frequency': 'Peak Frequency, mHz', 'Transverse Frequency': 'Peak Frequency, mHz', 'Ellipticity': 'Ellipticity', 'Takahashi Transverse Error/Resolution':'Error/Resolution', 'Takahashi Compressive Error/Resolution':'Error/Resolution', 'Heilig Transverse Error/Resolution':'Error/Resolution', 'Takahashi Transverse Error': 'Fractional Error', 'Takahashi Compressive Error': 'Fractional Error', 'Heilig Transverse Error': 'Fractional Error', 'Takahashi Transverse Error/Std Dev': 'Error/std dev', 'Takahashi Compressive Error/Std Dev': 'Error/std dev', 'Heilig Transverse Error/Std Dev': 'Error/std dev', 'Heilig Compressive Error/Std Dev': 'Error/std dev', 'Transverse': 'Prediction Error/Std Error', 'Compressive': 'Prediction Error/Std Error', 'Local Takahashi Compressive Error/Measurement Resolution': 'Prediction Error/Resolution', 'Local Takahashi Transverse Error/Measurement Resolution': 'Prediction Error/Resolution'}
 
     if property_key in cbar_labels:
         cbar1.set_label(cbar_labels[property_key])
     else:
-        cbar1.set_label('?')
+        cbar1.set_label('')
         
     if '/' in property_key:
-        filename = property_key.replace('/', ' over ')
+        filename=property_key.replace('/', ' over ')
     else:
-        filename = property_key
+        filename=property_key
 
-    path = "/Users/roseatkinson/Documents/New_Figs/" + filename + "_SWFilt.png"
+    if 'filename' in other_data:
+        filename=other_data['filename']
+
+    path = "/Users/roseatkinson/Documents/New_Figs/"+filename+"_SWFilt.png"
     plt.savefig(path)
 
 
@@ -1543,3 +1546,75 @@ def single_map(hist, angle_title, property_key):
     angle_name = angle_name.replace("°","")
     path = "/Users/roseatkinson/Documents/New_Figs/TestCase" + angle_name +".png"
     plt.savefig(path)
+
+
+################################################################
+
+#location map
+
+def location_mapping_duo(loc_list_low_1, loc_list_high_1, unused_locs_low_1, unused_locs_high_1, loc_list_low_2, loc_list_high_2, unused_locs_low_2, unused_locs_high_2, angle_key, **kwargs):
+    """Unpack all points in location list as x,y lists and plot"""
+    X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
+
+    loc_x = []
+    loc_y = []
+    
+    for loc_pair in location_list:
+        loc_x.append(loc_pair[0])
+        loc_y.append(loc_pair[1])
+        
+    ###################
+    fig = plt.figure(figsize=(8, 8))
+    gs = GridSpec(1, 2, figure=fig)
+
+    ax1 = fig.add_subplot(gs[0])
+    ax2 = fig.add_subplot(gs[1])
+
+    draw_background(axsLeft, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
+                        X_shue, R_shue)
+    
+    angle_line, ion_angle_line = cone_angle_line(fitting_coeffs, angle_key)
+    
+    x_s, x_e, y_s, y_e = angle_line
+    x_i_s, x_i_e, y_i_s, y_i_e = ion_angle_line
+    
+    axsLeft.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1.5)
+    axsLeft.plot([x_i_s, x_i_e], [y_i_s, y_i_e], color='k', linestyle='-', linewidth=1.5)
+    
+    axsLeft.scatter(loc_x, loc_y, marker="o", c="blue", s=60, label='low')
+
+    if 'location_refs' in kwargs:
+
+        loc_label_list_x = []
+        
+        for loc_pair in location_list:
+            loc_label_x = loc_pair[0]-1
+            loc_label_list_x.append(loc_label_x)
+
+        for loc_lab_x, loc_lab_y, loc_ref in zip(loc_label_list_x, loc_y, kwargs['location_refs']):
+            plt.text(loc_lab_x, loc_lab_y, loc_ref, color="maroon", weight= 'bold', fontsize=16)
+
+    if 'alt_locs' in kwargs:
+
+        alt_loc_x = []
+        alt_loc_y = []
+    
+        for loc_pair in kwargs['alt_locs']:
+            alt_loc_x.append(loc_pair[0])
+            alt_loc_y.append(loc_pair[1])
+
+        axsLeft.scatter(alt_loc_x, alt_loc_y, marker="^", c="orange", s=60, label='high')
+        axsLeft.legend(loc='best')
+
+    set_limits(axsLeft)
+
+    axsLeft.set_title(r'Case Study Locations')
+    axsLeft.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+    axsLeft.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+
+    if 'filename' in kwargs:
+        path = f"/Users/roseatkinson/Documents/New_Figs/{kwargs['filename']}.png"
+    else:
+        path = "/Users/roseatkinson/Documents/New_Figs/AlphaCaseStudyLocations.png"
+    plt.savefig(path, bbox_inches='tight')
+
