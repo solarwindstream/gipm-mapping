@@ -108,7 +108,7 @@ def cone_angle_line(fitting_coeffs, angle_key):
         "52.5-75°": np.tan(np.deg2rad(87.9)),
     }
 
-    #nb 0-20, 20-45, 40-60 not yet updated to correct numbers, approx only
+    #nb 0-20, 20-40, 20-45, 40-60 not yet updated to correct numbers, approx only
     tangent_start = {
         "20–40°": [0, 22.3],
         "20–45°": [0, 22.3],
@@ -121,7 +121,7 @@ def cone_angle_line(fitting_coeffs, angle_key):
         "52.5-75°": [10.1, 9.8],
     }
 
-    #nb 0-20, 20-45, 40-60 not yet updated to correct numbers, approx only
+    #nb 0-20, 20-40, 40-60 not yet updated to correct numbers, approx only
     #based on 70deg currently:
     ion_start = {
         "0–20°": [0,22.3],
@@ -913,7 +913,11 @@ def CA_binned_plot(property_key, ca_dict, **other_data):
         wspace=0.05, hspace=0.1
     )
 
-    fig.suptitle(property_key, fontsize=18)
+    if 'plt_title' in other_data:
+        fig.suptitle(other_data['plt_title'], fontsize=18)
+    else:
+        fig.suptitle(property_key, fontsize=18)
+        
     plt.rcParams['axes.labelsize'] = 14
     
     angle_titles = {"rad":"0–30°", "lowspir":"30–45°", "highspir":"45–60°", "lowperp":"60–75°", "highperp":"75–90°"}
