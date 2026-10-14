@@ -16,6 +16,8 @@ from pyspedas.cotrans_tools.minvar import minvar
 
 #apply pyspedas code to cut-down window for whichever spacecraft we are comparing to
 
+#######################################
+
 def minvar_analysis(t_s: pd.DataFrame):
     """Input a time series and return the rotated frame basis vectors & eigenvalues"""
     bx = t_s["Bx_gse"].values
@@ -27,7 +29,30 @@ def minvar_analysis(t_s: pd.DataFrame):
     #w gives eigenvalues
     vrot, v, w = minvar(np.column_stack([bx,by,bz]))
     print(f"Max/int/min eigenvalues: {w}")
-    return(vrot, v, w)
+    if w[1]/w[2] < 5:
+        print("MVA propagation determination questionable")
+
+    t_s['B_l']=vrot[:,0]
+    t_s['B_m']=vrot[:,1]
+    t_s['B_n']=vrot[:,2]
+    return(v, w, t_s)
+
+def minvar_rot(t_s: pd.DataFrame, v: np.Array):
+    """Input a time series and mva basis vectors, return the time series rotated into the mva frame"""
+    bx = t_s["Bx_gse"].values
+    by = t_s["By_gse"].values
+    bz = t_s["Bz_gse"].values
+    
+    gse_ts = np.column_stack([bx,by,bz])
+
+    vrot = np.array([np.dot(row, v) for row in gse_ts])
+    #vrot is the rotated time series for this interval
+
+    t_s['B_l']=vrot[:,0]
+    t_s['B_m']=vrot[:,1]
+    t_s['B_n']=vrot[:,2]
+    
+    return(t_s)
 
 ##################################################
 
@@ -93,8 +118,8 @@ def max_corr_slide_1_min_gse(sc, start_time, comparison_df):
 
 ##################################################
 
-def max_corr_slide_1_min_MVA(sc, start_time, comparison_df):
-    """Slide in a +- 30s window to maximise mva correlation"""
+def max_corr_slide_1_min_MVA(ts_df, start_time, comparison_df):
+    """Slide in a +- 30s window to maximise mva correlation and then plot the two with the highest transverse correlation"""
     #lmn coordinate system (max/int/min var directions)
     max_r_mag=0
     s_max_f_mag=-30
@@ -113,12 +138,11 @@ def max_corr_slide_1_min_MVA(sc, start_time, comparison_df):
     
         new_int_start=start_time + dt.timedelta(seconds=s)
         new_int_end=start_time+dt.timedelta(minutes=4)
-        ts_df=df_dict[sc]['Time Series']
-        ts_short[sc] = ts_df.loc[((ts_df.index >= new_int_start) & (ts_df.index < new_int_end))]
-        mag = ts_short[sc]['B_mag'].to_numpy()
-        bl = ts_short[sc]['B_l'].to_numpy()
-        bm = ts_short[sc]['B_m'].to_numpy()
-        bn = ts_short[sc]['B_n'].to_numpy()
+        ts_short = ts_df.loc[((ts_df.index >= new_int_start) & (ts_df.index < new_int_end))]
+        mag = ts_short['B_mag'].to_numpy()
+        bl = ts_short['B_l'].to_numpy()
+        bm = ts_short['B_m'].to_numpy()
+        bn = ts_short['B_n'].to_numpy()
         if mag.shape[0] > comp_mag.shape[0]:
             length = comp_mag.shape[0]
             mag = mag[:length]
@@ -149,10 +173,18 @@ def max_corr_slide_1_min_MVA(sc, start_time, comparison_df):
         if abs(r_n) > abs(max_r_n):
             max_r_n=r_n
             s_max_f_n=s    
-    print(f"Max Bmag correlation: {max_r_mag} time: {start_time+dt.timedelta(seconds=s_max_f_mag)}.")
-    print(f"Max B_l correlation: {max_r_l} time: {start_time+dt.timedelta(seconds=s_max_f_l)}.")
-    print(f"Max B_m correlation: {max_r_m} time: {start_time+dt.timedelta(seconds=s_max_f_m)}.")
-    print(f"Max B_n correlation: {max_r_n} time: {start_time+dt.timedelta(seconds=s_max_f_n)}.")
+
+    mr_mag_t=start_time+dt.timedelta(seconds=s_max_f_mag)
+    mr_l_t=start_time+dt.timedelta(seconds=s_max_f_l)
+    mr_m_t=start_time+dt.timedelta(seconds=s_max_f_m)
+    mr_n_t=start_time+dt.timedelta(seconds=s_max_f_n)
+    print(f"Max Bmag correlation: {max_r_mag} time: {mr_mag_t)}.")
+    print(f"Max B_l correlation: {max_r_l} time: {mr_l_t}.")
+    print(f"Max B_m correlation: {max_r_m} time: {mr_m_t}.")
+    print(f"Max B_n correlation: {max_r_n} time: {mr_n_t}.")
+
+    #return time of max bmag/l/m,n correlation
+    return(mr_mag_t, mr_l_t, mr_m_t, mr_n_t)
 
 ##################################################
 

@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 from gipm_plotting_modules import model_calcs, draw_background, set_limits
-from CorrelationModules import minvar_analysis, max_corr_slide_1_min_gse, max_corr_slide_1_min_MVA, ts_overlay
+from CorrelationModules import minvar_analysis, minvar_rot, max_corr_slide_1_min_gse, max_corr_slide_1_min_MVA, ts_overlay
 
 ############################
 ############################
@@ -42,10 +42,10 @@ ts_df_C1=df_dict[sc]['Time Series']
 ts_short_C1=ts_df_C1.loc[((ts_df_C1.index >= int_start) & (ts_df_C1.index < int_end))]
 
 #MVA transform for C1
-vrot_1, v_1, w_1 = minvar_analysis(t_s=ts_df_C1)
-print(v_1, w_1)
+v_1, w_1, ts_short_C1 = minvar_analysis(t_s=ts_df_C1)
+print(v_1)
 
-#now apply same transform to C3
+#now apply same transform to C3, using C1 MVA frame
 
 temp_int_start = int_start - dt.timedelta(minutes=0.5)
 temp_int_end = int_start + dt.timedelta(minutes=4.5)
@@ -53,6 +53,15 @@ temp_int_end = int_start + dt.timedelta(minutes=4.5)
 ts_df_C3=df_dict['C3']['Time Series']
 temp_ts_short_C3=ts_df_C3.loc[((ts_df_C3.index >= temp_int_start) & (ts_df_C3.index < temp_int_end))]
 
+temp_ts_short_C3=minvar_rot(temp_ts_short_C3, v_1)
+#and then sliiiiiiiiiiiide
+mr_mag_t_3, mr_l_t_3, mr_m_t_3, mr_n_t_3 = max_corr_slide_1_min_MVA(temp_ts_short_C3, int_start, ts_short_C1)
+
+ts_short_c3 = temp_ts_short_C3.loc[((temp_ts_short_C3.index >= new_int_start) & (temp_ts_short_C3.index < new_int_end))]
+if ts_short_c1.shape < 
+#find matching windows, shorten to exact same length and then plot
+ts_overlay(ts_short_C1, inp_ts_2: pd.DataFrame, fname: str, ['C1', 'C3'], props=['B_Mag'])
+    
 # ts_short={}
 
 # for sc in scs:
