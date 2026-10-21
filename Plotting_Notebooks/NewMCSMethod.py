@@ -80,18 +80,7 @@ for sc in scs:
 
 #print(cl_ts['C1'].index)
 
-#for finding likely foreshock areas, no longer needed but for documentation purposes
-#from gipm_plotting_modules import single_map
-# heatmaps_dict_new = {'0-20°':{},'20-40°':{}}
-
-# heatmaps_dict_new['0-20°'] = compute_hists2d(cl_filtered_0_20, 'mean', 'Normalised Transverse Power', obs_min=50)
-# heatmaps_dict_new['20-40°'] = compute_hists2d(cl_filtered_20_40, 'mean', 'Normalised Transverse Power', obs_min=50)
-
-#note that ion and tangent lines are for 30-45 case
-#single_map(heatmaps_dict_new['0-20°']['Normalised Transverse Power'], "0–20°",'Power')
-#single_map(heatmaps_dict_new['20-40°']['Normalised Transverse Power'], "20–40°",'Power')
-
-#now iterate over x, y foreshock strips:
+#iterate over x, y foreshock strips:
 #key is start of x pair
 
 y_lims_0_20 = {
@@ -134,7 +123,7 @@ for x in range(5,17):
     df = cl_filtered_20_40_ULF.loc[(cl_filtered_20_40_ULF['GIPM X (OMNI mean)'] >= x) & (cl_filtered_20_40_ULF['GIPM X (OMNI mean)'] < x_end) & (cl_filtered_20_40_ULF['GIPM Y (OMNI mean)'] >= y_bounds[0]) & (cl_filtered_20_40_ULF['GIPM Y (OMNI mean)'] < y_bounds[1])]
     fs_df_list_20_40.append(df)
 
-#Background start times and mean background conditions for all possible foreshock
+#Background start times and mean background conditions for all possible foreshock intervals
 fs_dfs_0_20 = pd.concat(fs_df_list_0_20)
 fs_dfs_20_40 = pd.concat(fs_df_list_20_40)
 
@@ -155,17 +144,16 @@ path = '/Users/roseatkinson/Documents/Extreme_Spectra/'
 
 #Dictionary for NaNp/cone angle bins
 
-CA_NANP_binning = {}
+CA_NANP_binned = {}
 
 errorfiles = []
-
 
 #pairings of group name and interval list dfs to consult
 
 for ca, alpha_dict in cl_intervals_foreshock.items():
-    CA_NANP_binning[ca]={}
+    CA_NANP_binned[ca]={}
         for alpha, df in alpha_dict.items():
-            CA_NANP_binning[ca][alpha]={}
+            CA_NANP_binned[ca][alpha]={}
             #now 
             
     fs_df_list, fs_normed_list, win_starts, sc_no_list, ts_df_list, nanp, labels, omni_means, x_means, y_means, takahashi, mean_B_cluster, mag_comp, v_sw_means, cone_angle, proton_density, tak_trans_diff, tak_comp_diff, peak_t_freq, peak_c_freq, ratio_Pc4_Pc3_trans, ratio_Pc4_Pc3_comp  =([] for i in range(22))
@@ -229,29 +217,29 @@ for ca, alpha_dict in cl_intervals_foreshock.items():
 
     xy_pairs = np.stack((x_locs,y_locs), axis=-1)
 
-    CA_NANP_binning[ref]['TS List']=ts_df_list
-    CA_NANP_binning[ref]['FS List']=fs_df_list
-    CA_NANP_binning[ref]['Normed FS List']=fs_normed_list
-    CA_NANP_binning[ref]['Win Starts']=win_starts
-    CA_NANP_binning[ref]['Sc No.']= sc_no_list
-    CA_NANP_binning[ref]['NaNp']=nanp
-    CA_NANP_binning[ref]['NaNp Labels']=labels
-    CA_NANP_binning[ref]['OMNI means']=omni_means
-    CA_NANP_binning[ref]['GIPM X mean']=x_means
-    CA_NANP_binning[ref]['GIPM Y mean']=y_means
-    CA_NANP_binning[ref]['Takahashi Frequency']=takahashi
-    CA_NANP_binning[ref]['Cluster Mean B']=mean_B_cluster
-    CA_NANP_binning[ref]['Bcluster/Bomni']=mag_comp
-    CA_NANP_binning[ref]['Mean V_SW']=v_sw_means
-    CA_NANP_binning[ref]['Cone Angle']=cone_angle
-    CA_NANP_binning[ref]['Np']=proton_density
-    CA_NANP_binning[ref]['Takahashi Transverse Difference']=tak_trans_diff
-    CA_NANP_binning[ref]['Takahashi Compressive Difference']=tak_comp_diff
-    CA_NANP_binning[ref]['Peak Transverse Frequency']=peak_t_freq
-    CA_NANP_binning[ref]['Peak Compressive Frequency']=peak_c_freq
-    CA_NANP_binning[ref]['Transverse Pc4/Pc3 Ratio']=ratio_Pc4_Pc3_trans
-    CA_NANP_binning[ref]['Compressive Pc4/Pc3 Ratio']=ratio_Pc4_Pc3_comp
-    CA_NANP_binning[ref]['XY mean locations']=xy_pairs
+    CA_NANP_binned[ref]['TS List']=ts_df_list
+    CA_NANP_binned[ref]['FS List']=fs_df_list
+    CA_NANP_binned[ref]['Normed FS List']=fs_normed_list
+    CA_NANP_binned[ref]['Win Starts']=win_starts
+    CA_NANP_binned[ref]['Sc No.']= sc_no_list
+    CA_NANP_binned[ref]['NaNp']=nanp
+    CA_NANP_binned[ref]['NaNp Labels']=labels
+    CA_NANP_binned[ref]['OMNI means']=omni_means
+    CA_NANP_binned[ref]['GIPM X mean']=x_means
+    CA_NANP_binned[ref]['GIPM Y mean']=y_means
+    CA_NANP_binned[ref]['Takahashi Frequency']=takahashi
+    CA_NANP_binned[ref]['Cluster Mean B']=mean_B_cluster
+    CA_NANP_binned[ref]['Bcluster/Bomni']=mag_comp
+    CA_NANP_binned[ref]['Mean V_SW']=v_sw_means
+    CA_NANP_binned[ref]['Cone Angle']=cone_angle
+    CA_NANP_binned[ref]['Np']=proton_density
+    CA_NANP_binned[ref]['Takahashi Transverse Difference']=tak_trans_diff
+    CA_NANP_binned[ref]['Takahashi Compressive Difference']=tak_comp_diff
+    CA_NANP_binned[ref]['Peak Transverse Frequency']=peak_t_freq
+    CA_NANP_binned[ref]['Peak Compressive Frequency']=peak_c_freq
+    CA_NANP_binned[ref]['Transverse Pc4/Pc3 Ratio']=ratio_Pc4_Pc3_trans
+    CA_NANP_binned[ref]['Compressive Pc4/Pc3 Ratio']=ratio_Pc4_Pc3_comp
+    CA_NANP_binned[ref]['XY mean locations']=xy_pairs
 
 all_low_mean_b = []
 all_high_mean_b = []
