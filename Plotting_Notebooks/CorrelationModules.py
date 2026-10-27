@@ -178,7 +178,7 @@ def max_corr_slide_1_min_MVA(ts_df, start_time, comparison_df):
     mr_l_t=start_time+dt.timedelta(seconds=s_max_f_l)
     mr_m_t=start_time+dt.timedelta(seconds=s_max_f_m)
     mr_n_t=start_time+dt.timedelta(seconds=s_max_f_n)
-    print(f"Max Bmag correlation: {max_r_mag} time: {mr_mag_t)}.")
+    print(f"Max Bmag correlation: {max_r_mag} time: {mr_mag_t}.")
     print(f"Max B_l correlation: {max_r_l} time: {mr_l_t}.")
     print(f"Max B_m correlation: {max_r_m} time: {mr_m_t}.")
     print(f"Max B_n correlation: {max_r_n} time: {mr_n_t}.")
@@ -188,9 +188,9 @@ def max_corr_slide_1_min_MVA(ts_df, start_time, comparison_df):
 
 ##################################################
 
-def ts_overlay(inp_ts_1: pd.DataFrame, inp_ts_2: pd.DataFrame, fname: str, scs: list[str], props=['B_Mag']) -> None: 
+def ts_overlay(inp_ts_1: pd.DataFrame, inp_ts_2: pd.DataFrame, fname: str, scs: list[str], props=['B_mag']) -> None: 
     """Overlay time series for input time series"""
-    fig = plt.figure(figsize=(5, 3))
+    fig = plt.figure(figsize=(8, (len(props)//2)*2))
 
     if len(props)==1:
         ax=fig.add_axes((0, 0, 1, 1))
@@ -198,8 +198,8 @@ def ts_overlay(inp_ts_1: pd.DataFrame, inp_ts_2: pd.DataFrame, fname: str, scs: 
     else:
         ax_list=[]
         gs = GridSpec(len(props)//2, 2, figure=fig)
-        for n in len(props):
-            ax = fig.add_subplot(n//2,n%2)
+        for n in range(len(props)):
+            ax = fig.add_subplot(gs[n//2,n%2])
             ax_list.append(ax)
     
     locator = mdates.AutoDateLocator(minticks=3, maxticks=5)
@@ -207,7 +207,14 @@ def ts_overlay(inp_ts_1: pd.DataFrame, inp_ts_2: pd.DataFrame, fname: str, scs: 
 
     for l,p in enumerate(props):
         ax=ax_list[l]
-        Cmin, Cmax = (inp_ts_1[p].min()) - 1, (inp_ts_1[p].max()) + 1
+        if inp_ts_1[p].min() < inp_ts_2[p].min():
+            Cmin=(inp_ts_1[p].min() - 1)
+        else:
+            Cmin=(inp_ts_2[p].min() - 1)
+        if inp_ts_1[p].max() > inp_ts_2[p].max():
+            Cmax=(inp_ts_1[p].max()+ 1)
+        else:
+            Cmax=(inp_ts_2[p].max() + 1)        
         ax.plot(inp_ts_1.index, inp_ts_1[p], color = 'k', label=scs[0])
         ax.plot(inp_ts_1.index, inp_ts_2[p], color = 'indigo', label=scs[1])
         ax.set_ylim(Cmin, Cmax)
@@ -216,6 +223,7 @@ def ts_overlay(inp_ts_1: pd.DataFrame, inp_ts_2: pd.DataFrame, fname: str, scs: 
         ax.xaxis.set_minor_locator(AutoMinorLocator())
         ax.xaxis.set_tick_params(labelsize=12)
         ax.yaxis.set_tick_params(labelsize=12)
+        ax.set_ylabel(p)
         if p==props[-1]:
             ax.legend(loc='lower right')
     
