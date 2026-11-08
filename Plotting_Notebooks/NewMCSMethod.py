@@ -165,7 +165,7 @@ for ca, alpha_dict in cl_intervals_foreshock.items():
             filepath = path+filename
             #transform units to mHz from Hz, & reverse diff from Ftak-Fpeak to Fpeak-Ftak:
             row['Takahashi Transverse Difference']= -1000*row['Takahashi Transverse Difference']
-            row['Takahashi Compressive Difference']= -1000*row['Takahashi Compressive Difference'] 
+            row['Takahashi Compressive Difference']= -1000*row['Takahashi Compressive Difference']
             row['Peak Transverse Frequency'] = 1000*row['Peak Transverse Frequency']
             row['Peak Compressive Frequency'] = 1000*row['Peak Compressive Frequency']
             try:
@@ -333,8 +333,9 @@ print('High MCS1 Intervals:', len(list_high_FS_MCS_1))
 all_low_MCS_1= pd.concat(list_low_FS_MCS_1)
 all_high_MCS_1 = pd.concat(list_high_FS_MCS_1)
 
-bin_list = np.arange(2.083333335e-03, 11.2, 4.16666667e-03)
+bin_list = (np.arange(2.083333335e-03, 11.2, 4.16666667e-03)).tolist()
 bin_list=[0]+bin_list
+bin_list=np.array(bin_list)
 print(bin_list)
 #low: mean and median
 mean_trans_low_MCS_1, bin_edg,_ = scipy.stats.binned_statistic(all_low_MCS_1['Frequency'], all_low_MCS_1['Total Transverse Power'], statistic='mean', bins=bin_list)
@@ -355,14 +356,18 @@ pc4_pc3_trans_MCS_1_low = []
 pc4_pc3_comp_MCS_1_low = []
 tak_trans_diff_MCS_1_low = []
 tak_comp_diff_MCS_1_low = []
-  
+peak_f_t_MCS_1_low = []
+peak_f_c_MCS_1_low = []
+
 for sc, sc_dict in foreshock_intervals_list_1['Low'].items():
     tak_MCS_1_low.extend(sc_dict['Takahashi Frequency, Hz'].to_list())
     pc4_pc3_trans_MCS_1_low.extend(sc_dict['Pc4/Pc3 Ratio, Transverse'].to_list())
     pc4_pc3_comp_MCS_1_low.extend(sc_dict['Pc4/Pc3 Ratio, Compressive'].to_list())
     tak_trans_diff_MCS_1_low.extend(sc_dict['Takahashi Transverse Difference'].to_list())
     tak_comp_diff_MCS_1_low.extend(sc_dict['Takahashi Compressive Difference'].to_list())
-     
+    peak_f_t_MCS_1_low.extend(sc_dict['Peak Transverse Frequency'].to_list())
+    peak_f_c_MCS_1_low.extend(sc_dict['Peak Compressive Frequency'].to_list())
+          
 mean_tak_MCS_1_low = np.mean(np.array(tak_MCS_1_low))
 median_tak_MCS_1_low = np.median(np.array(tak_MCS_1_low))
 
@@ -372,6 +377,9 @@ pc4_pc3_trans_MCS_1_high = []
 pc4_pc3_comp_MCS_1_high = []
 tak_trans_diff_MCS_1_high = []
 tak_comp_diff_MCS_1_high = []
+peak_f_t_MCS_1_high = []
+peak_f_c_MCS_1_high = []
+      
 
 for sc, sc_dict in foreshock_intervals_list_1['High'].items():
     tak_MCS_1_high.extend(sc_dict['Takahashi Frequency, Hz'].to_list())
@@ -379,11 +387,13 @@ for sc, sc_dict in foreshock_intervals_list_1['High'].items():
     pc4_pc3_comp_MCS_1_high.extend(sc_dict['Pc4/Pc3 Ratio, Compressive'].to_list())
     tak_trans_diff_MCS_1_high.extend(sc_dict['Takahashi Transverse Difference'].to_list())
     tak_comp_diff_MCS_1_high.extend(sc_dict['Takahashi Compressive Difference'].to_list())
-  
+    peak_f_t_MCS_1_high.extend(sc_dict['Peak Transverse Frequency'].to_list())
+    peak_f_c_MCS_1_high.extend(sc_dict['Peak Compressive Frequency'].to_list())
+      
 mean_tak_MCS_1_high = np.mean(np.array(tak_MCS_1_high))
 median_tak_MCS_1_high = np.median(np.array(tak_MCS_1_high))
 
-midpoint_list = np.arange(4.16666667e-03, 11.2, 4.16666667e-03)
+midpoint_list = np.arange(0, 11.2, 4.16666667e-03)
 spectra_overlay_plot_comparison(list_low_FS_MCS_1, list_high_FS_MCS_1, CS_name='Case Study 1, 0-20°, Median', trans_ave_1=median_trans_low_MCS_1, comp_ave_1=median_comp_low_MCS_1, trans_ave_2=median_trans_high_MCS_1, comp_ave_2=median_comp_high_MCS_1, midpoints=midpoint_list, tak_freq_1=median_tak_MCS_1_low, tak_freq_2=median_tak_MCS_1_high)
 
 spectra_overlay_plot_comparison(list_low_FS_MCS_1, list_high_FS_MCS_1, CS_name='Case Study 1, 0-20°, Mean', trans_ave_1=mean_trans_low_MCS_1, comp_ave_1=mean_comp_low_MCS_1, trans_ave_2=mean_trans_high_MCS_1, comp_ave_2=mean_comp_high_MCS_1, midpoints=midpoint_list, tak_freq_1=mean_tak_MCS_1_low, tak_freq_2=mean_tak_MCS_1_high)
@@ -412,9 +422,6 @@ print('High MCS 2A Intervals:', len(list_high_FS_MCS_2A))
 all_low_MCS_2A= pd.concat(list_low_FS_MCS_2A)
 all_high_MCS_2A = pd.concat(list_high_FS_MCS_2A)
 
-bin_list = np.arange(2.083333335e-03, 11.2, 4.16666667e-03)
-bin_list=[0]+bin_list
-print(bin_list)
 #low: mean and median
 mean_trans_low_MCS_2A, bin_edg,_ = scipy.stats.binned_statistic(all_low_MCS_2A['Frequency'], all_low_MCS_2A['Total Transverse Power'], statistic='mean', bins=bin_list)
 mean_comp_low_MCS_2A, bin_edg,_ = scipy.stats.binned_statistic(all_low_MCS_2A['Frequency'], all_low_MCS_2A['Compressive Power'], statistic='mean', bins=bin_list)
@@ -470,7 +477,6 @@ for sc, sc_dict in foreshock_intervals_list_2A['High'].items():
 mean_tak_MCS_2A_high = np.mean(np.array(tak_MCS_2A_high))
 median_tak_MCS_2A_high = np.median(np.array(tak_MCS_2A_high))
 
-midpoint_list = np.arange(4.16666667e-03, 11.2, 4.16666667e-03)
 spectra_overlay_plot_comparison(list_low_FS_MCS_2A, list_high_FS_MCS_2A, CS_name='Case Study 2A, 20-40°, Median', trans_ave_1=median_trans_low_MCS_2A, comp_ave_1=median_comp_low_MCS_2A, trans_ave_2=median_trans_high_MCS_2A, comp_ave_2=median_comp_high_MCS_2A, midpoints=midpoint_list, tak_freq_1=median_tak_MCS_2A_low, tak_freq_2=median_tak_MCS_2A_high)
 
 spectra_overlay_plot_comparison(list_low_FS_MCS_2A, list_high_FS_MCS_2A, CS_name='Case Study 2A, 20-40°, Mean', trans_ave_1=mean_trans_low_MCS_2A, comp_ave_1=mean_comp_low_MCS_2A, trans_ave_2=mean_trans_high_MCS_2A, comp_ave_2=mean_comp_high_MCS_2A, midpoints=midpoint_list, tak_freq_1=mean_tak_MCS_2A_low, tak_freq_2=mean_tak_MCS_2A_high)
@@ -484,7 +490,7 @@ for sc, sc_dict in FS_dict_2B['Low'].items():
         print('Sc: ', sc, 'Int: ', dt)
         list_low_FS_MCS_2B.append(df)
 
-print('Low MCS1 Intervals:', len(list_low_FS_MCS_2B))
+print('Low MCS 2B Intervals:', len(list_low_FS_MCS_2B))
 
 list_high_FS_MCS_2B=[]
 
@@ -493,14 +499,11 @@ for sc, sc_dict in FS_dict_2B['High'].items():
         print('Sc: ', sc, 'Int: ', dt)
         list_high_FS_MCS_2B.append(df)
     
-print('High MCS1 Intervals:', len(list_high_FS_MCS_2B))
+print('High MCS 2B Intervals:', len(list_high_FS_MCS_2B))
 
 all_low_MCS_2B= pd.concat(list_low_FS_MCS_2B)
 all_high_MCS_2B = pd.concat(list_high_FS_MCS_2B)
 
-bin_list = np.arange(2.083333335e-03, 11.2, 4.16666667e-03)
-bin_list=[0]+bin_list
-print(bin_list)
 #low: mean and median
 mean_trans_low_MCS_2B, bin_edg,_ = scipy.stats.binned_statistic(all_low_MCS_2B['Frequency'], all_low_MCS_2B['Total Transverse Power'], statistic='mean', bins=bin_list)
 mean_comp_low_MCS_2B, bin_edg,_ = scipy.stats.binned_statistic(all_low_MCS_2B['Frequency'], all_low_MCS_2B['Compressive Power'], statistic='mean', bins=bin_list)
@@ -556,7 +559,6 @@ for sc, sc_dict in foreshock_intervals_list_2B['High'].items():
 mean_tak_MCS_2B_high = np.mean(np.array(tak_MCS_2B_high))
 median_tak_MCS_2B_high = np.median(np.array(tak_MCS_2B_high))
 
-midpoint_list = np.arange(4.16666667e-03, 11.2, 4.16666667e-03)
 spectra_overlay_plot_comparison(list_low_FS_MCS_2B, list_high_FS_MCS_2B, CS_name='Case Study 2B, 20-40°, Median', trans_ave_1=median_trans_low_MCS_2B, comp_ave_1=median_comp_low_MCS_2B, trans_ave_2=median_trans_high_MCS_2B, comp_ave_2=median_comp_high_MCS_2B, midpoints=midpoint_list, tak_freq_1=median_tak_MCS_2B_low, tak_freq_2=median_tak_MCS_2B_high)
 
 spectra_overlay_plot_comparison(list_low_FS_MCS_2B, list_high_FS_MCS_2B, CS_name='Case Study 2B, 20-40°, Mean', trans_ave_1=mean_trans_low_MCS_2B, comp_ave_1=mean_comp_low_MCS_2B, trans_ave_2=mean_trans_high_MCS_2B, comp_ave_2=mean_comp_high_MCS_2B, midpoints=midpoint_list, tak_freq_1=mean_tak_MCS_2B_low, tak_freq_2=mean_tak_MCS_2B_high)
@@ -570,7 +572,7 @@ for sc, sc_dict in FS_dict_2C['Low'].items():
         print('Sc: ', sc, 'Int: ', dt)
         list_low_FS_MCS_2C.append(df)
 
-print('Low MCS1 Intervals:', len(list_low_FS_MCS_2C))
+print('Low MCS2C Intervals:', len(list_low_FS_MCS_2C))
 
 list_high_FS_MCS_2C=[]
 
@@ -579,14 +581,11 @@ for sc, sc_dict in FS_dict_2C['High'].items():
         print('Sc: ', sc, 'Int: ', dt)
         list_high_FS_MCS_2C.append(df)
     
-print('High MCS1 Intervals:', len(list_high_FS_MCS_2C))
+print('High MCS 2C Intervals:', len(list_high_FS_MCS_2C))
 
 all_low_MCS_2C= pd.concat(list_low_FS_MCS_2C)
 all_high_MCS_2C = pd.concat(list_high_FS_MCS_2C)
 
-bin_list = np.arange(2.083333335e-03, 11.2, 4.16666667e-03)
-bin_list=[0]+bin_list
-print(bin_list)
 #low: mean and median
 mean_trans_low_MCS_2C, bin_edg,_ = scipy.stats.binned_statistic(all_low_MCS_2C['Frequency'], all_low_MCS_2C['Total Transverse Power'], statistic='mean', bins=bin_list)
 mean_comp_low_MCS_2C, bin_edg,_ = scipy.stats.binned_statistic(all_low_MCS_2C['Frequency'], all_low_MCS_2C['Compressive Power'], statistic='mean', bins=bin_list)
@@ -642,11 +641,32 @@ for sc, sc_dict in foreshock_intervals_list_2C['High'].items():
 mean_tak_MCS_2C_high = np.mean(np.array(tak_MCS_2C_high))
 median_tak_MCS_2C_high = np.median(np.array(tak_MCS_2C_high))
 
-midpoint_list = np.arange(4.16666667e-03, 11.2, 4.16666667e-03)
 spectra_overlay_plot_comparison(list_low_FS_MCS_2C, list_high_FS_MCS_2C, CS_name='Case Study 2C, 20-40°, Median', trans_ave_1=median_trans_low_MCS_2C, comp_ave_1=median_comp_low_MCS_2C, trans_ave_2=median_trans_high_MCS_2C, comp_ave_2=median_comp_high_MCS_2C, midpoints=midpoint_list, tak_freq_1=median_tak_MCS_2C_low, tak_freq_2=median_tak_MCS_2C_high)
 
 spectra_overlay_plot_comparison(list_low_FS_MCS_2C, list_high_FS_MCS_2C, CS_name='Case Study 2C, 20-40°, Mean', trans_ave_1=mean_trans_low_MCS_2C, comp_ave_1=mean_comp_low_MCS_2C, trans_ave_2=mean_trans_high_MCS_2C, comp_ave_2=mean_comp_high_MCS_2C, midpoints=midpoint_list, tak_freq_1=mean_tak_MCS_2C_low, tak_freq_2=mean_tak_MCS_2C_high)
 
+
+################################
+################################
+print('Mean transverse Pc4/Pc3 ratio, MCS 1 low alpha: ', np.mean(np.array(pc4_pc3_trans_MCS_1_low)))
+print('Mean transverse Pc4/Pc3 ratio, MCS 1 high alpha: ', np.mean(np.array(pc4_pc3_trans_MCS_1_high)))
+print('Mean compressive Pc4/Pc3 ratio, MCS 1 low alpha: ', np.mean(np.array(pc4_pc3_comp_MCS_1_low)))
+print('Mean compressive Pc4/Pc3 ratio, MCS 1 high alpha: ', np.mean(np.array(pc4_pc3_comp_MCS_1_high)))
+
+print('Mean transverse Pc4/Pc3 ratio, MCS 2A low alpha: ', np.mean(np.array(pc4_pc3_trans_MCS_2A_low)))
+print('Mean transverse Pc4/Pc3 ratio, MCS 2A high alpha: ', np.mean(np.array(pc4_pc3_trans_MCS_2A_high)))
+print('Mean compressive Pc4/Pc3 ratio, MCS 2A low alpha: ', np.mean(np.array(pc4_pc3_comp_MCS_2A_low)))
+print('Mean compressive Pc4/Pc3 ratio, MCS 2A high alpha: ', np.mean(np.array(pc4_pc3_comp_MCS_2A_high)))
+
+print('Mean transverse Pc4/Pc3 ratio, MCS 2B low alpha: ', np.mean(np.array(pc4_pc3_trans_MCS_2B_low)))
+print('Mean transverse Pc4/Pc3 ratio, MCS 2B high alpha: ', np.mean(np.array(pc4_pc3_trans_MCS_2B_high)))
+print('Mean compressive Pc4/Pc3 ratio, MCS 2B low alpha: ', np.mean(np.array(pc4_pc3_comp_MCS_2B_low)))
+print('Mean compressive Pc4/Pc3 ratio, MCS 2B high alpha: ', np.mean(np.array(pc4_pc3_comp_MCS_2B_high)))
+
+print('Mean transverse Pc4/Pc3 ratio, MCS 2C low alpha: ', np.mean(np.array(pc4_pc3_trans_MCS_2C_low)))
+print('Mean transverse Pc4/Pc3 ratio, MCS 2C high alpha: ', np.mean(np.array(pc4_pc3_trans_MCS_2C_high)))
+print('Mean compressive Pc4/Pc3 ratio, MCS 2C low alpha: ', np.mean(np.array(pc4_pc3_comp_MCS_2C_low)))
+print('Mean compressive Pc4/Pc3 ratio, MCS 2C high alpha: ', np.mean(np.array(pc4_pc3_comp_MCS_2C_high)))
 ################################
 ################################
 
@@ -712,6 +732,8 @@ path = "/Users/roseatkinson/Documents/New_Figs/Fpeak_Ftak_New.png"
 plt.savefig(path, bbox_inches='tight')
 
 ############
+############
+
 #Scatter Plot
 
 list_low_tak = []
@@ -788,3 +810,303 @@ path = "/Users/roseatkinson/Documents/New_Figs/Fpeak_Ftak_Scatter_New.png"
 # else:
 #     path = "/Users/roseatkinson/Documents/New_Figs/AlphaCaseStudyLocations.png"
 plt.savefig(path, bbox_inches='tight')
+
+#################################
+#################################
+
+#Location Mapping
+from gipm_plotting_modules import model_calcs, draw_background, cone_angle_line, set_limits
+
+#MCS1
+#background
+x_list_all_MCS_1_low = []
+y_list_all_MCS_1_low = []
+
+for sc, sc_dict in actual_foreshock_intervals['0_20']['Low'].items():
+    x_list_all_MCS_1_low.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_all_MCS_1_low.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+x_list_all_MCS_1_high = []
+y_list_all_MCS_1_high = []
+
+for sc, sc_dict in actual_foreshock_intervals['0_20']['High'].items():
+    x_list_all_MCS_1_high.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_all_MCS_1_high.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+#used
+x_list_MCS_1_low = []
+y_list_MCS_1_low = []
+
+for sc, sc_dict in foreshock_intervals_list_1['Low'].items():
+    x_list_MCS_1_low.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_MCS_1_low.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+x_list_MCS_1_high = []
+y_list_MCS_1_high = []
+
+for sc, sc_dict in foreshock_intervals_list_1['High'].items():
+    x_list_MCS_1_high.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_MCS_1_high.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+#MCS2
+#background
+x_list_all_MCS_2_low = []
+y_list_all_MCS_2_low = []
+
+for sc, sc_dict in actual_foreshock_intervals['20_40']['Low'].items():
+    x_list_all_MCS_2_low.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_all_MCS_2_low.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+x_list_all_MCS_2_high = []
+y_list_all_MCS_2_high = []
+
+for sc, sc_dict in actual_foreshock_intervals['20_40']['High'].items():
+    x_list_all_MCS_2_high.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_all_MCS_2_high.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+#used - 2A
+x_list_MCS_2A_low = []
+y_list_MCS_2A_low = []
+
+for sc, sc_dict in foreshock_intervals_list_2A['Low'].items():
+    x_list_MCS_2A_low.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_MCS_2A_low.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+x_list_MCS_2A_high = []
+y_list_MCS_2A_high = []
+
+for sc, sc_dict in foreshock_intervals_list_2A['High'].items():
+    x_list_MCS_2A_high.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_MCS_2A_high.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+#used - 2B
+x_list_MCS_2B_low = []
+y_list_MCS_2B_low = []
+
+for sc, sc_dict in foreshock_intervals_list_2B['Low'].items():
+    x_list_MCS_2B_low.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_MCS_2B_low.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+x_list_MCS_2B_high = []
+y_list_MCS_2B_high = []
+
+for sc, sc_dict in foreshock_intervals_list_2B['High'].items():
+    x_list_MCS_2B_high.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_MCS_2B_high.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+#used - 2C
+x_list_MCS_2C_low = []
+y_list_MCS_2C_low = []
+
+for sc, sc_dict in foreshock_intervals_list_2C['Low'].items():
+    x_list_MCS_2C_low.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_MCS_2C_low.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+x_list_MCS_2C_high = []
+y_list_MCS_2C_high = []
+
+for sc, sc_dict in foreshock_intervals_list_2C['High'].items():
+    x_list_MCS_2C_high.extend(sc_dict['GIPM X (OMNI mean)'].to_list())
+    y_list_MCS_2C_high.extend(sc_dict['GIPM Y (OMNI mean)'].to_list())
+
+###################
+fig = plt.figure(figsize=(7, 5))
+gs = GridSpec(1, 2, figure=fig)
+
+ax1 = fig.add_subplot(gs[0])
+ax2 = fig.add_subplot(gs[1])
+
+
+#ax1:
+X_shue, R_shue, Xgipm, Ygipm, Zgipm, f, fitting_coeffs = model_calcs()
+
+draw_background(ax1, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
+                    X_shue, R_shue)
+
+angle_line, ion_angle_line = cone_angle_line(fitting_coeffs, "0–20°")
+
+x_s, x_e, y_s, y_e = angle_line
+x_i_s, x_i_e, y_i_s, y_i_e = ion_angle_line
+
+ax1.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1.5)
+ax1.plot([x_i_s, x_i_e], [y_i_s, y_i_e], color='k', linestyle='-', linewidth=1.5)
+
+ax1.scatter(x_list_all_MCS_1_low, y_list_all_MCS_1_low, marker="o", c="dimgrey", s=60, alpha=0.25)
+ax1.scatter(x_list_all_MCS_1_high, y_list_all_MCS_1_high, marker="^", c="dimgrey", s=60, alpha=0.25)
+ax1.scatter(x_list_MCS_1_low, y_list_MCS_1_low, marker="o", c="blue", s=60, label='low')
+ax1.scatter(x_list_MCS_1_high, y_list_MCS_1_high, marker="^", c="orange", s=60, label='high')
+
+ax1.hlines([-9, -13], 8, 13, color='maroon', linewidth=2)
+ax1.vlines([8, 13], -9, -13, color='maroon', linewidth=2)
+
+ax1.text(8,-12, '1', color="maroon", weight= 'bold', fontsize=16)
+ax1.legend(loc='best')
+
+set_limits(ax1)
+ax1.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+ax1.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+ax1.set_title("0-20°")
+
+#ax2:
+
+draw_background(ax2, Xgipm[:, :, 0], Ygipm[:, :, 0], f[:, :, 0],
+                    X_shue, R_shue)
+
+angle_line, ion_angle_line = cone_angle_line(fitting_coeffs, "20–40°")
+
+x_s, x_e, y_s, y_e = angle_line
+x_i_s, x_i_e, y_i_s, y_i_e = ion_angle_line
+
+ax2.plot([x_s, x_e], [y_s, y_e], color='k', linewidth=1.5)
+ax2.plot([x_i_s, x_i_e], [y_i_s, y_i_e], color='k', linestyle='-', linewidth=1.5)
+
+#all points in dataset
+ax2.scatter(x_list_all_MCS_2_low, y_list_all_MCS_2_low, marker="o", c="dimgrey", s=60, alpha=0.25)
+ax2.scatter(x_list_all_MCS_2_high, y_list_all_MCS_2_high, marker="^", c="dimgrey", s=60, alpha=0.25)
+#used points
+ax2.scatter(x_list_MCS_2A_low, y_list_MCS_2A_low, marker="o", c="blue", s=60, label='low')
+ax2.scatter(x_list_MCS_2A_high, y_list_MCS_2A_high, marker="^", c="orange", s=60, label='high')
+ax2.scatter(x_list_MCS_2B_low, y_list_MCS_2B_low, marker="o", c="blue", s=60)
+ax2.scatter(x_list_MCS_2B_high, y_list_MCS_2B_high, marker="^", c="orange", s=60)
+ax2.scatter(x_list_MCS_2C_low, y_list_MCS_2C_low, marker="o", c="blue", s=60)
+ax2.scatter(x_list_MCS_2C_high, y_list_MCS_2C_high, marker="^", c="orange", s=60)
+
+ax2.hlines([-4,-2,0], 14, 17, color='maroon', linewidth=2)
+ax2.hlines([-12,-9], 8, 12, color='maroon', linewidth=2)
+ax2.vlines([14, 17], 0, -4, color='maroon', linewidth=2)
+ax2.vlines([8, 12], -12, -9, color='maroon', linewidth=2)
+
+ax2.text(14.5,2, '2A', color="maroon", weight='bold', fontsize=16)
+ax2.text(16,-4.5, '2B', color="maroon", weight='bold', fontsize=16)
+ax2.text(8,-12, '2C', color="maroon", weight='bold', fontsize=16)
+ax2.legend(loc='best')
+
+set_limits(ax1)
+set_limits(ax2)
+ax2.set_xlabel("$X_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+ax2.set_ylabel("$Y_\\mathrm{GIPM}$ ($R_\\mathrm{E}$)")
+ax2.set_title("20-40°")
+
+fig.suptitle(r'Case Study Locations', size=15)
+
+
+path = "/Users/roseatkinson/Documents/New_Figs/All_Locations_New.png"
+# if 'filename' in kwargs:
+#     path = f"/Users/roseatkinson/Documents/New_Figs/{kwargs['filename']}.png"
+# else:
+#     path = "/Users/roseatkinson/Documents/New_Figs/AlphaCaseStudyLocations.png"
+plt.savefig(path, bbox_inches='tight')
+
+################################
+################################
+
+#produce plot showing histograms for fpeak-falpha_tak
+tak_alpha_MCS_1_low=(1000*np.array(tak_MCS_1_low))/2
+peak_f_t_MCS_1_low=np.array(peak_f_t_MCS_1_low)
+peak_f_c_MCS_1_low=np.array(peak_f_c_MCS_1_low)
+f_t_alpha_diff_MCS_1_low=(peak_f_t_MCS_1_low - tak_alpha_MCS_1_low).tolist()
+f_c_alpha_diff_MCS_1_low=(peak_f_c_MCS_1_low - tak_alpha_MCS_1_low).tolist()
+
+tak_alpha_MCS_1_high=(1000*np.array(tak_MCS_1_high))/2
+peak_f_t_MCS_1_high=np.array(peak_f_t_MCS_1_high)
+peak_f_c_MCS_1_high=np.array(peak_f_c_MCS_1_high)
+f_t_alpha_diff_MCS_1_high=(peak_f_t_MCS_1_high - tak_alpha_MCS_1_high).tolist()
+f_c_alpha_diff_MCS_1_high=(peak_f_c_MCS_1_high - tak_alpha_MCS_1_high).tolist()
+
+tak_alpha_MCS_2A_low=(1000*np.array(tak_MCS_2A_low))/2
+peak_f_t_MCS_2A_low=np.array(peak_f_t_MCS_2A_low)
+peak_f_c_MCS_2A_low=np.array(peak_f_c_MCS_2A_low)
+f_t_alpha_diff_MCS_2A_low=(peak_f_t_MCS_2A_low - tak_alpha_MCS_2A_low).tolist()
+f_c_alpha_diff_MCS_2A_low=(peak_f_c_MCS_2A_low - tak_alpha_MCS_2A_low).tolist()
+
+tak_alpha_MCS_2A_high=(1000*np.array(tak_MCS_2A_high))/2
+peak_f_t_MCS_2A_high=np.array(peak_f_t_MCS_2A_high)
+peak_f_c_MCS_2A_high=np.array(peak_f_c_MCS_2A_high)
+f_t_alpha_diff_MCS_2A_high=(peak_f_t_MCS_2A_high - tak_alpha_MCS_2A_high).tolist()
+f_c_alpha_diff_MCS_2A_high=(peak_f_c_MCS_2A_high - tak_alpha_MCS_2A_high).tolist()
+
+tak_alpha_MCS_2B_low=(1000*np.array(tak_MCS_2B_low))/2
+peak_f_t_MCS_2B_low=np.array(peak_f_t_MCS_2B_low)
+peak_f_c_MCS_2B_low=np.array(peak_f_c_MCS_2B_low)
+f_t_alpha_diff_MCS_2B_low=(peak_f_t_MCS_2B_low - tak_alpha_MCS_2B_low).tolist()
+f_c_alpha_diff_MCS_2B_low=(peak_f_c_MCS_2B_low - tak_alpha_MCS_2B_low).tolist()
+
+tak_alpha_MCS_2B_high=(1000*np.array(tak_MCS_2B_high))/2
+peak_f_t_MCS_2B_high=np.array(peak_f_t_MCS_2B_high)
+peak_f_c_MCS_2B_high=np.array(peak_f_c_MCS_2B_high)
+f_t_alpha_diff_MCS_2B_high=(peak_f_t_MCS_2B_high - tak_alpha_MCS_2B_high).tolist()
+f_c_alpha_diff_MCS_2B_high=(peak_f_c_MCS_2B_high - tak_alpha_MCS_2B_high).tolist()
+
+tak_alpha_MCS_2C_low=(1000*np.array(tak_MCS_2C_low))/2
+peak_f_t_MCS_2C_low=np.array(peak_f_t_MCS_2C_low)
+peak_f_c_MCS_2C_low=np.array(peak_f_c_MCS_2C_low)
+f_t_alpha_diff_MCS_2C_low=(peak_f_t_MCS_2C_low - tak_alpha_MCS_2C_low).tolist()
+f_c_alpha_diff_MCS_2C_low=(peak_f_c_MCS_2C_low - tak_alpha_MCS_2C_low).tolist()
+
+tak_alpha_MCS_2C_high=(1000*np.array(tak_MCS_2C_high))/2
+peak_f_t_MCS_2C_high=np.array(peak_f_t_MCS_2C_high)
+peak_f_c_MCS_2C_high=np.array(peak_f_c_MCS_2C_high)
+f_t_alpha_diff_MCS_2C_high=(peak_f_t_MCS_2C_high - tak_alpha_MCS_2C_high).tolist()
+f_c_alpha_diff_MCS_2C_high=(peak_f_c_MCS_2C_high - tak_alpha_MCS_2C_high).tolist()
+
+#first produce for joint low + high 
+# tak_trans_diff_MCS_1_high
+# tak_comp_diff_MCS_1_high
+low_alpha_diff_trans = f_t_alpha_diff_MCS_1_low+f_t_alpha_diff_MCS_2A_low+f_t_alpha_diff_MCS_2B_low+f_t_alpha_diff_MCS_2C_low
+low_alpha_diff_comp = f_c_alpha_diff_MCS_1_low+f_c_alpha_diff_MCS_2A_low+f_c_alpha_diff_MCS_2B_low+f_c_alpha_diff_MCS_2C_low
+high_alpha_diff_trans = f_t_alpha_diff_MCS_1_high+f_t_alpha_diff_MCS_2A_high+f_t_alpha_diff_MCS_2B_high+f_t_alpha_diff_MCS_2C_high
+high_alpha_diff_comp = f_c_alpha_diff_MCS_1_high+f_c_alpha_diff_MCS_2A_high+f_c_alpha_diff_MCS_2B_high+f_c_alpha_diff_MCS_2C_high
+
+low_mean_a_diff = np.mean(np.array(low_alpha_diff_trans))
+high_mean_a_diff = np.mean(np.array(high_alpha_diff_trans))
+# print(f"{high_tak_diff_trans=}")
+# print(f"{high_mean_t_diff=}")
+low_mean_ac_diff= np.mean(np.array(low_alpha_diff_comp))
+high_mean_ac_diff = np.mean(np.array(high_alpha_diff_comp))
+# print(f"{high_tak_diff_comp=}")
+# print(f"{high_mean_c_diff=}")
+
+bins=np.array([-35.4166667 , -31.25000003, -27.08333336, -22.91666669,
+       -18.75000002, -14.58333335, -10.41666668,  -6.25000001,
+        -2.08333334, 2.08333334,  6.25000001, 10.41666668, 14.58333335,
+       18.75000002, 22.91666669, 27.08333336, 31.25000003,
+       35.4166667])
+# bins = 1000*np.array([-0.01458333, -0.01041667, -0.00625, -0.00208333, 0.00208333, 0.00625,0.01041667, 0.01458333])
+
+fig = plt.figure(figsize=(9, 5))
+gs = GridSpec(1, 2, figure=fig)
+
+ax1 = fig.add_subplot(gs[0])
+ax2 = fig.add_subplot(gs[1], sharey=ax1)
+plt.setp(ax2.get_yticklabels(), visible=False)
+
+ax1.hist(low_alpha_diff_trans, bins=bins, histtype='barstacked', color='blue', ec='darkblue', linewidth=1, alpha=0.5, label='Low Alpha')
+ax1.hist(high_alpha_diff_trans, bins=bins, histtype='barstacked', color='orange', ec='darkorange', linewidth=1, alpha=0.5, label='High Alpha')
+ax1.vlines(low_mean_a_diff, 0, 10, color='k', linestyles='-', label='Mean (Low Alpha)')
+ax1.vlines(high_mean_a_diff, 0, 10, color='k', linestyles='dotted', label='Mean (High Alpha)')
+#ax1.legend()
+ax1.set_xlabel('Fpeak - Falpha, mHz')
+ax1.set_ylabel('No. Intervals')
+ax1.set_title('Transverse', fontsize=16)
+ax1.set_xlim(-30,30)
+ax1.set_ylim(0,10)
+
+ax2.hist(low_alpha_diff_comp, bins=bins, histtype='barstacked', color='blue', ec='darkblue', linewidth=1,  alpha=0.5, label='Low Alpha')
+ax2.hist(high_alpha_diff_comp, bins=bins, histtype='barstacked', color='orange', ec='darkorange', linewidth=1, alpha=0.5, label='High Alpha')
+ax2.set_xlabel('Fpeak - Falpha, mHz')
+ax2.set_title('Compressive', fontsize=16)
+ax2.vlines(low_mean_ac_diff, 0, 10, color='k', linestyles='-', label='Mean (Low Alpha)')
+ax2.vlines(high_mean_ac_diff, 0, 10, color='k', linestyles='dotted', label='Mean (High Alpha)')
+ax2.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+ax2.set_xlim(-30,30)
+ax2.set_ylim(0,10)
+
+path = "/Users/roseatkinson/Documents/New_Figs/Fpeak_Falpha_New.png"
+# if 'filename' in kwargs:
+#     path = f"/Users/roseatkinson/Documents/New_Figs/{kwargs['filename']}.png"
+# else:
+#     path = "/Users/roseatkinson/Documents/New_Figs/AlphaCaseStudyLocations.png"
+plt.savefig(path, bbox_inches='tight')
+
+############
+############
