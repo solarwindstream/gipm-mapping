@@ -8,7 +8,6 @@ from matplotlib import pyplot as plt
 from matplotlib.gridspec import GridSpec
 from spectra_modules import spectra_plot, TS_plot, spectra_overlay_plot, TS_and_FS, split_band_power_int, spectra_overlay_plot_comparison
 from gipm_plotting_modules import location_mapping
-from heatmap_modules import compute_hists2d
 import scipy
 
 ##load integrated Cluster CSVs
@@ -1110,3 +1109,102 @@ plt.savefig(path, bbox_inches='tight')
 
 ############
 ############
+
+#save a CSV for each interval, high and low, with all spectra 
+
+verif_path = "/Users/roseatkinson/Documents/Alpha_Interval_Verification/Int_List/"
+
+sc_list_MCS_1_low=[]
+index_list_MCS_1_low=[]
+
+for sc, sc_dict in foreshock_intervals_list_1['Low'].items():
+    index_list_MCS_1_low.extend(sc_dict.index.to_list())
+    for item in sc_dict.index.to_list():
+        sc_list_MCS_1_low.append(sc)
+    
+MCS1_low_int_df=pd.DataFrame(sc_list_MCS_1_low, columns=['sc'],index=index_list_MCS_1_low)
+
+sc_list_MCS_1_high=[]
+index_list_MCS_1_high=[]
+
+for sc, sc_dict in foreshock_intervals_list_1['High'].items():
+    index_list_MCS_1_high.extend(sc_dict.index.to_list())
+    for item in sc_dict.index.to_list():
+        sc_list_MCS_1_high.append(sc)
+  
+MCS1_high_int_df=pd.DataFrame(sc_list_MCS_1_high, columns=['sc'],index=index_list_MCS_1_high)
+
+MCS1_low_int_df.to_csv(path_or_buf=verif_path+'MCS1_Low.csv',index_label='datetime')
+MCS1_high_int_df.to_csv(path_or_buf=verif_path+'MCS1_High.csv',index_label='datetime')
+
+sc_list_MCS_2A_low=[]
+index_list_MCS_2A_low=[]
+
+for sc, sc_dict in foreshock_intervals_list_2A['Low'].items():
+    index_list_MCS_2A_low.extend(sc_dict.index.to_list())
+    for item in sc_dict.index.to_list():
+        sc_list_MCS_2A_low.append(sc)
+    
+MCS2A_low_int_df=pd.DataFrame(sc_list_MCS_2A_low, columns=['sc'],index=index_list_MCS_2A_low)
+
+sc_list_MCS_2A_high=[]
+index_list_MCS_2A_high=[]
+
+for sc, sc_dict in foreshock_intervals_list_2A['High'].items():
+    index_list_MCS_2A_high.extend(sc_dict.index.to_list())
+    for item in sc_dict.index.to_list():
+        sc_list_MCS_2A_high.append(sc)
+  
+MCS2A_high_int_df=pd.DataFrame(sc_list_MCS_2A_high, columns=['sc'],index=index_list_MCS_2A_high)
+
+MCS2A_low_int_df.to_csv(path_or_buf=verif_path+'MCS2A_Low.csv',index_label='datetime')
+MCS2A_high_int_df.to_csv(path_or_buf=verif_path+'MCS2A_High.csv',index_label='datetime')
+
+#########
+sc_list_MCS_2B_low=[]
+index_list_MCS_2B_low=[]
+
+for sc, sc_dict in foreshock_intervals_list_2B['Low'].items():
+    index_list_MCS_2B_low.extend(sc_dict.index.to_list())
+    for item in sc_dict.index.to_list():
+        sc_list_MCS_2B_low.append(sc)
+    
+MCS2B_low_int_df=pd.DataFrame(sc_list_MCS_2B_low, columns=['sc'],index=index_list_MCS_2B_low)
+
+sc_list_MCS_2B_high=[]
+index_list_MCS_2B_high=[]
+
+for sc, sc_dict in foreshock_intervals_list_2B['High'].items():
+    index_list_MCS_2B_high.extend(sc_dict.index.to_list())
+    for item in sc_dict.index.to_list():
+        sc_list_MCS_2B_high.append(sc)
+  
+MCS2B_high_int_df=pd.DataFrame(sc_list_MCS_2B_high, columns=['sc'],index=index_list_MCS_2B_high)
+
+MCS2B_low_int_df.to_csv(path_or_buf=verif_path+'MCS2B_Low.csv',index_label='datetime')
+MCS2B_high_int_df.to_csv(path_or_buf=verif_path+'MCS2B_High.csv',index_label='datetime')
+
+
+#########
+sc_list_MCS_2C_low=[]
+index_list_MCS_2C_low=[]
+
+for sc, sc_dict in foreshock_intervals_list_2C['Low'].items():
+    index_list_MCS_2C_low.extend(sc_dict.index.to_list())
+    for item in sc_dict.index.to_list():
+        sc_list_MCS_2C_low.append(sc)
+    
+MCS2C_low_int_df=pd.DataFrame(sc_list_MCS_2C_low, columns=['sc'],index=index_list_MCS_2C_low)
+
+sc_list_MCS_2C_high=[]
+index_list_MCS_2C_high=[]
+
+for sc, sc_dict in foreshock_intervals_list_2C['High'].items():
+    index_list_MCS_2C_high.extend(sc_dict.index.to_list())
+    for item in sc_dict.index.to_list():
+        sc_list_MCS_2C_high.append(sc)
+  
+MCS2C_high_int_df=pd.DataFrame(sc_list_MCS_2C_high, columns=['sc'],index=index_list_MCS_2C_high)
+
+MCS2C_low_int_df.to_csv(path_or_buf=verif_path+'MCS2C_Low.csv',index_label='datetime')
+MCS2C_high_int_df.to_csv(path_or_buf=verif_path+'MCS2C_High.csv',index_label='datetime')
